@@ -30,6 +30,16 @@ CareTrip is a specialized healthcare platform designed for international travele
 
 ---
 
+### 🩺 Trust & Verification System
+To solve the problem of finding "Trusted Doctors," we implement a multi-layered verification process:
+1.  **NMC Registration**: Doctors must provide their National Medical Commission (NMC) Registration Number during sign-up.
+2.  **License Upload**: Doctors upload their Medical Certificate to Cloudinary for secure storage.
+3.  **Manual Admin Audit**: Platform admins verify the registration number on the official **NMC National Medical Register (NMR)** portal.
+4.  **NMC Web Search Integration**: Every doctor's profile includes a "Verify on NMC" link that directs users to their live government record.
+5.  **Verified Badge**: Only successfully audited doctors receive the blue "CareTrip Verified" badge.
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Frontend
