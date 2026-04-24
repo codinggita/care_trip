@@ -96,8 +96,8 @@ const Login = () => {
                 type="button"
                 onClick={() => setRole(r)}
                 className={`flex-1 text-sm font-semibold py-1.5 rounded-lg transition-all ${role === r
-                    ? 'bg-white text-primary shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-primary shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
                 {r}
