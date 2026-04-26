@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Edit, LogOut, Bell, Mail, MapPin, Globe, User, Plane, Heart, Settings, Save, X, Check, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 // Default empty profile — no dummy data
 const emptyProfile = {
@@ -50,11 +51,13 @@ const Toggle = ({ enabled, onToggle }) => (
   </button>
 );
 
-export default function Profile({ user }) {
+export default function Profile({ user, onProfileUpdate }) {
   const navigate = useNavigate();
 
   // Load saved profile or start empty
   const [profile, setProfile] = useState(() => {
+    // If user has profile data, use it, otherwise check localStorage
+    if (user?.phone || user?.dob) return user;
     const saved = loadSavedProfile();
     return saved || { ...emptyProfile };
   });
@@ -62,6 +65,7 @@ export default function Profile({ user }) {
   const [editing, setEditing] = useState(null); // which card is being edited: 'personal' | 'travel' | 'medical' | null
   const [draft, setDraft] = useState({});
   const [saveMessage, setSaveMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const [appSettings, setAppSettings] = useState(() => {
     try {
@@ -114,14 +118,30 @@ export default function Profile({ user }) {
     setDraft({});
   };
 
-  const saveEdit = () => {
-    const updated = { ...profile, ...draft };
-    setProfile(updated);
-    saveProfile(updated);
-    setEditing(null);
-    setDraft({});
-    setSaveMessage('Profile updated successfully!');
-    setTimeout(() => setSaveMessage(''), 3000);
+  const saveEdit = async () => {
+    setIsSaving(true);
+    try {
+      const updated = { ...profile, ...draft };
+      const { data } = await api.put('/profile', updated);
+      
+      setProfile(data.data);
+      localStorage.setItem('caretrip_user', JSON.stringify(data.data));
+      
+      // Notify parent component to update user state
+      if (onProfileUpdate) {
+        onProfileUpdate(data.data);
+      }
+      
+      setEditing(null);
+      setDraft({});
+      setSaveMessage('Profile updated successfully!');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      alert('Failed to save profile changes');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDraftChange = (key, value) => {
@@ -131,7 +151,7 @@ export default function Profile({ user }) {
   const handleLogout = () => {
     localStorage.removeItem('caretrip_token');
     localStorage.removeItem('caretrip_user');
-    navigate('/');
+    navigate('/login');
   };
 
   // Display value or placeholder

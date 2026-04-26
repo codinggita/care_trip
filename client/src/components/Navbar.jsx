@@ -25,7 +25,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen, user }) {
               <path d="M16 8v16M8 16h16" stroke="white" strokeWidth="3" strokeLinecap="round" />
             </svg>
             <span className="text-lg font-bold text-primary-700 hidden sm:block">
-              MediTravel Assist
+              CareTrip
             </span>
           </div>
         </div>
@@ -49,7 +49,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen, user }) {
           {/* Location Pill */}
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-600">
             <MapPin size={14} className="text-primary-700" />
-            <span className="font-medium">Mumbai, India</span>
+            <span className="font-medium">Gandhinagar, India</span>
           </div>
 
           {/* Notifications */}

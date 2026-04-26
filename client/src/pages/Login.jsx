@@ -154,7 +154,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-blue-700 active:bg-blue-800 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-primary/30 flex justify-center items-center mt-2 select-none focus:outline-none focus:ring-0"
+              className="w-full bg-primary-700 hover:bg-primary-800 active:bg-primary-900 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-primary-700/30 flex justify-center items-center mt-2 select-none focus:outline-none focus:ring-0"
             >
               {isLoading ? (
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
