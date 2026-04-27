@@ -4,6 +4,8 @@ import { safetyTips } from '../data/mockData';
 import MapplsMap from '../components/MapplsMap';
 import api from '../services/api';
 
+import Avatar from '../components/Avatar';
+
 // Map iconType strings to Lucide components
 const tipIcons = {
   'id-card': IdCard,
@@ -293,9 +295,12 @@ export default function EmergencyHelp() {
               {hospitals.map((hospital) => (
                 <div key={hospital.id} className="card p-4 card-hover bg-white border border-slate-100 group">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-bold text-slate-900 text-sm leading-tight pr-2">
-                      {hospital.name}
-                    </h3>
+                    <div className="flex items-center gap-3 pr-2">
+                      <Avatar doc={hospital} className="w-10 h-10 text-xs flex-shrink-0" />
+                      <h3 className="font-bold text-slate-900 text-sm leading-tight">
+                        {hospital.name}
+                      </h3>
+                    </div>
                     {hospital.rating && (
                       <span className="flex-shrink-0 flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
                         <Star size={10} fill="currentColor" /> {hospital.rating}
@@ -305,11 +310,21 @@ export default function EmergencyHelp() {
                   
                   <p className="text-xs text-slate-500 mb-2 line-clamp-2">{hospital.address}</p>
 
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
+                    {hospital.phone && (
+                      <a href={`tel:${hospital.phone}`} className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg hover:bg-emerald-100 transition-colors">
+                        <Phone size={12} /> {hospital.phone}
+                      </a>
+                    )}
                     {hospital.openNow !== null && (
                       <span className={`flex items-center gap-1 text-[11px] font-bold ${hospital.openNow ? 'text-emerald-600' : 'text-red-500'}`}>
                         <Clock size={12} />
                         {hospital.openNow ? 'Open Now' : 'Closed'}
+                      </span>
+                    )}
+                    {hospital.openingHours && (
+                      <span className="text-[10px] text-slate-500 bg-slate-100 px-2 py-1 rounded-lg line-clamp-1 max-w-[150px]" title={hospital.openingHours}>
+                        {hospital.openingHours}
                       </span>
                     )}
                     {hospital.totalRatings > 0 && (

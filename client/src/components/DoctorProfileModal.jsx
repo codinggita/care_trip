@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Star, CheckCircle, Clock, Globe, BadgeCheck } from 'lucide-react';
+import { X, Star, CheckCircle, Clock, Globe, BadgeCheck, Phone, MapPin } from 'lucide-react';
 
 export default function DoctorProfileModal({ doctor, onClose, onBook }) {
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -56,8 +56,72 @@ export default function DoctorProfileModal({ doctor, onClose, onBook }) {
         {/* Bio */}
         <div className="px-6 py-4 border-b border-slate-100">
           <h3 className="text-sm font-semibold text-slate-700 mb-2">About</h3>
-          <p className="text-sm text-slate-600 leading-relaxed">{doctor.bio}</p>
+          <p className="text-sm text-slate-600 leading-relaxed">{doctor.bio || `Specialized ${doctor.specialty} providing comprehensive healthcare services at ${doctor.name}.`}</p>
         </div>
+
+        {/* Contact Information (MOVED TO TOP & ENHANCED) */}
+        <div className="px-6 py-5 bg-slate-50/50 border-b border-slate-100">
+          <div className="flex items-center justify-between mb-4 px-6">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Contact Details</h3>
+            <span className="text-[10px] bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full font-bold">Verified Data</span>
+          </div>
+          <div className="px-6 space-y-3">
+            {doctor.phones && doctor.phones.length > 0 ? (
+              doctor.phones.map((ph, i) => (
+                <a 
+                  key={i} 
+                  href={`tel:${ph}`} 
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-primary-500 hover:shadow-md transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                      <Phone size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">{i === 0 ? 'Primary Number' : 'Alternative Number'}</p>
+                      <p className="text-base font-bold text-slate-900 tracking-tight">{ph}</p>
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-primary-600 group-hover:bg-primary-50">
+                    <Phone size={14} fill="currentColor" />
+                  </div>
+                </a>
+              ))
+            ) : (
+              <div className="p-4 rounded-2xl bg-white border border-dashed border-slate-300 text-center flex flex-col items-center gap-3">
+                <p className="text-sm text-slate-500 italic">For the contact number and more details, please visit the location directly.</p>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(doctor.name + ', ' + (doctor.address || ''))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-700 rounded-xl text-sm font-bold hover:bg-primary-100 transition-colors"
+                >
+                  <MapPin size={16} />
+                  See Location
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Image Gallery (NEW) */}
+        {doctor.images && doctor.images.length > 0 && (
+          <div className="px-6 py-4 border-b border-slate-100">
+            <h3 className="text-sm font-semibold text-slate-700 mb-3">Facility Photos</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {doctor.images.map((img, idx) => (
+                <div key={idx} className={`rounded-xl overflow-hidden border border-slate-100 shadow-sm ${idx === 0 && doctor.images.length === 3 ? 'row-span-2' : 'h-24'}`}>
+                  <img 
+                    src={img} 
+                    alt={`${doctor.name} facility ${idx + 1}`}
+                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                    onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Languages */}
         <div className="px-6 py-4 border-b border-slate-100">
@@ -72,16 +136,49 @@ export default function DoctorProfileModal({ doctor, onClose, onBook }) {
         </div>
 
         {/* Fees */}
+        {(doctor.fee || doctor.estimatedTreatment) && (
+          <div className="px-6 py-4 border-b border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700">Consultation Fee</h3>
+                <p className="text-lg font-bold text-primary-700">{doctor.fee ? `₹${doctor.fee}` : 'Contact'}</p>
+              </div>
+              <div className="text-right">
+                <h3 className="text-sm font-semibold text-slate-700">Est. Treatment Cost</h3>
+                <p className="text-sm font-medium text-slate-600">{doctor.estimatedTreatment || 'Available on request'}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+
+        {/* Opening Hours (NEW) */}
         <div className="px-6 py-4 border-b border-slate-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-700">Consultation Fee</h3>
-              <p className="text-lg font-bold text-primary-700">₹{doctor.fee}</p>
-            </div>
-            <div className="text-right">
-              <h3 className="text-sm font-semibold text-slate-700">Est. Treatment Cost</h3>
-              <p className="text-sm font-medium text-slate-600">{doctor.estimatedTreatment}</p>
-            </div>
+          <h3 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+            <Clock size={16} className="text-primary-600" /> Opening Hours
+          </h3>
+          <div className="p-3 rounded-xl bg-primary-50/50 border border-primary-100">
+            {doctor.openingHours ? (
+              <p className="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line">
+                {doctor.openingHours}
+              </p>
+            ) : (
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm text-slate-500 italic">
+                  For opening hours and time slots, please visit the location for more information.
+                </p>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(doctor.name + ', ' + (doctor.address || ''))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white text-primary-700 border border-primary-100 rounded-xl text-sm font-bold hover:bg-primary-50 transition-colors"
+                >
+                  <MapPin size={16} />
+                  See Location
+                </a>
+              </div>
+            )}
           </div>
         </div>
 
