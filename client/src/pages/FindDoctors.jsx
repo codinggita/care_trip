@@ -3,6 +3,7 @@ import { Search, MapPin, Star, BadgeCheck, Navigation, X, Loader2, Phone } from 
 import { specialties } from '../data/mockData';
 import MapplsMap from '../components/MapplsMap';
 import api from '../services/api';
+import Avatar from '../components/Avatar';
 
 export default function FindDoctors({ onViewProfile, onBookDoctor }) {
   const [searchText, setSearchText] = useState('');
@@ -268,17 +269,7 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
                 <div key={doc._id || doc.id} className="card p-5 card-hover group flex flex-col justify-between">
                   {/* Header with Logo */}
                   <div className="flex items-start gap-3 mb-2">
-                    <div className={`w-11 h-11 rounded-xl ${doc.color || 'bg-primary-700'} text-white flex items-center justify-center font-semibold text-sm shadow-md
-                                    group-hover:scale-105 transition-transform duration-300 overflow-hidden`}>
-                      {doc.icon ? (
-                        <img
-                          src={doc.icon}
-                          alt={doc.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = doc.initials || 'DR'; }}
-                        />
-                      ) : (doc.initials || 'DR')}
-                    </div>
+                    <Avatar doc={doc} className="w-11 h-11 text-sm group-hover:scale-105 transition-transform duration-300" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-slate-900 text-sm truncate">{doc.name}</h3>
                       <p className="text-xs text-slate-500">{doc.specialty}</p>

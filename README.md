@@ -59,7 +59,7 @@ To solve the problem of finding "Trusted Doctors," we implement a multi-layered 
 ## 📁 Project Structure
 
 ```text
-MediTravel/
+CareTrip/
 ├── client/                # React Frontend (Vite)
 │   ├── src/
 │   │   ├── components/    # Reusable UI components
@@ -87,7 +87,7 @@ MediTravel/
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd MediTravel
+   cd CareTrip
    ```
 
 2. **Setup the Backend**:
