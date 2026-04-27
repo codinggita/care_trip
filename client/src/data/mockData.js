@@ -1,5 +1,5 @@
 // =====================================================
-// MOCK DATA — MediTravel Assist
+// MOCK DATA — CareTrip
 // =====================================================
 
 // Helper to get logged-in user from localStorage
@@ -25,7 +25,7 @@ export function getLoggedInUser() {
   }
   return {
     name: 'Guest User',
-    email: 'guest@meditravel.com',
+    email: 'guest@caretrip.com',
     phone: '+91 98765 43210',
     initials: 'GU',
   };
@@ -312,11 +312,14 @@ export const specialties = [
   'Dermatologist',
   'Orthopedic',
   'Pediatrician',
+  'ENT Specialist',
+  'Dentist',
 ];
 
 export const languageOptions = [
   'English',
   'Hindi',
+  'Gujarati',
   'Bengali',
   'Tamil',
   'Kannada',
@@ -326,5 +329,5 @@ export const quickStats = [
   { iconType: 'stethoscope', label: 'Verified Doctors Nearby', value: '24' },
   { iconType: 'globe', label: 'Languages Supported', value: '12' },
   { iconType: 'star', label: 'Average Rating', value: '4.7' },
-  { iconType: 'map-pin', label: 'Your Location', value: 'Mumbai' },
+  { iconType: 'map-pin', label: 'Your Location', value: 'Gandhinagar' },
 ];

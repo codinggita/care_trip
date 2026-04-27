@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { X, CheckCircle, ChevronRight, ChevronLeft, Clock, Check } from 'lucide-react';
+import { X, CheckCircle, ChevronRight, ChevronLeft, Clock, Check, Loader2 } from 'lucide-react';
+import api from '../services/api';
 
-export default function BookingModal({ doctor, onClose, user }) {
+export default function BookingModal({ doctor, onClose, user, onNavigate }) {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [formData, setFormData] = useState({
     name: user?.name || 'Guest',
-    phone: user?.phone || '+91 98765 43210',
+    phone: user?.phone || 'Not set in profile',
     reason: '',
     language: 'English',
   });
+  const [isBooking, setIsBooking] = useState(false);
 
   // Generate next 7 days
   const getNextDays = () => {
@@ -44,6 +46,34 @@ export default function BookingModal({ doctor, onClose, user }) {
 
   const handleBack = () => {
     if (step > 1) setStep(step - 1);
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedSlot) {
+      alert('Please select a time slot');
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      const bookingData = {
+        doctorId: doctor._id || doctor.id,
+        doctorName: doctor.name,
+        doctorSpecialty: doctor.specialty,
+        date: days[selectedDate].full,
+        timeSlot: selectedSlot,
+        reason: formData.reason,
+        languagePreference: formData.language
+      };
+
+      await api.post('/bookings', bookingData);
+      setStep(3); // Show confirmation step
+    } catch (error) {
+      console.error('Booking failed:', error);
+      alert('Booking failed. Please try again.');
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   return (
@@ -146,7 +176,7 @@ export default function BookingModal({ doctor, onClose, user }) {
               onClick={handleNext}
               disabled={!selectedSlot}
               className={`w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all duration-200
-                ${selectedSlot
+                ${selectedSlot && (user?.phone)
                   ? 'btn-primary'
                   : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 }`}
@@ -173,13 +203,16 @@ export default function BookingModal({ doctor, onClose, user }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number (from Profile)</label>
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="input-field"
+                  readOnly
+                  className="input-field bg-slate-50 text-slate-500 cursor-not-allowed"
                 />
+                {!user?.phone && (
+                  <p className="text-[10px] text-red-500 mt-1">Please update your phone number in Profile settings.</p>
+                )}
               </div>
 
               <div>
@@ -217,8 +250,16 @@ export default function BookingModal({ doctor, onClose, user }) {
               >
                 <ChevronLeft size={18} /> Back
               </button>
-              <button onClick={handleNext} className="flex-1 btn-primary py-3 rounded-xl">
-                Confirm Booking
+              <button 
+                onClick={handleConfirm} 
+                disabled={isBooking}
+                className="flex-1 btn-primary py-3 rounded-xl flex items-center justify-center gap-2"
+              >
+                {isBooking ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" /> Processing...
+                  </>
+                ) : 'Confirm Booking'}
               </button>
             </div>
           </div>
@@ -264,7 +305,13 @@ export default function BookingModal({ doctor, onClose, user }) {
               <button onClick={onClose} className="flex-1 btn-secondary py-3 rounded-xl">
                 Back to Home
               </button>
-              <button onClick={onClose} className="flex-1 btn-primary py-3 rounded-xl">
+              <button 
+                onClick={() => {
+                  if (onNavigate) onNavigate('bookings');
+                  onClose();
+                }} 
+                className="flex-1 btn-primary py-3 rounded-xl"
+              >
                 View My Bookings
               </button>
             </div>

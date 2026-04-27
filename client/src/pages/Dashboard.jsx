@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import BookingModal from '../components/BookingModal';
@@ -8,19 +8,37 @@ import FindDoctors from './FindDoctors';
 import EmergencyHelp from './EmergencyHelp';
 import MyBookings from './MyBookings';
 import Profile from './Profile';
-import { getLoggedInUser } from '../data/mockData';
+import api from '../services/api';
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bookingDoctor, setBookingDoctor] = useState(null);
   const [profileDoctor, setProfileDoctor] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Get the logged-in user from localStorage
-  const user = useMemo(() => getLoggedInUser(), []);
+  // Fetch real profile from API
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const { data } = await api.get('/profile');
+        setUser(data.data);
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+        // Fallback to local data if API fails or session expired
+        const localUser = localStorage.getItem('caretrip_user');
+        if (localUser) setUser(JSON.parse(localUser));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   // Extract first name for welcome greeting
-  const firstName = user.name.split(' ')[0];
+  const firstName = user?.name?.split(' ')[0] || 'User';
 
   const handleNavigate = useCallback((section) => {
     setActiveSection(section);
@@ -46,10 +64,14 @@ export default function Dashboard() {
     setProfileDoctor(null);
   }, []);
 
+  const handleProfileUpdate = useCallback((updatedUser) => {
+    setUser(updatedUser);
+  }, []);
+
   const renderSection = () => {
     switch (activeSection) {
       case 'home':
-        return <Home onNavigate={handleNavigate} onBookDoctor={handleBookDoctor} />;
+        return <Home onNavigate={handleNavigate} onBookDoctor={handleBookDoctor} onViewProfile={handleViewProfile} />;
       case 'find-doctors':
         return <FindDoctors onViewProfile={handleViewProfile} onBookDoctor={handleBookDoctor} />;
       case 'emergency':
@@ -57,7 +79,7 @@ export default function Dashboard() {
       case 'bookings':
         return <MyBookings />;
       case 'profile':
-        return <Profile user={user} />;
+        return <Profile user={user} onProfileUpdate={handleProfileUpdate} />;
       default:
         return <Home onNavigate={handleNavigate} onBookDoctor={handleBookDoctor} />;
     }
@@ -70,6 +92,17 @@ export default function Dashboard() {
     'bookings': 'My Bookings',
     'profile': 'My Profile',
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-700 rounded-full animate-spin"></div>
+          <p className="text-slate-500 font-medium">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -93,7 +126,7 @@ export default function Dashboard() {
           {/* Breadcrumb */}
           <div className="mb-6">
             <p className="text-xs text-slate-400 mb-1">
-              MediTravel Assist / {sectionTitles[activeSection]}
+              CareTrip / {sectionTitles[activeSection]}
             </p>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
               {activeSection === 'home'
@@ -112,7 +145,7 @@ export default function Dashboard() {
 
       {/* Modals */}
       {bookingDoctor && (
-        <BookingModal doctor={bookingDoctor} onClose={handleCloseBooking} user={user} />
+        <BookingModal doctor={bookingDoctor} onClose={handleCloseBooking} user={user} onNavigate={handleNavigate} />
       )}
       {profileDoctor && (
         <DoctorProfileModal
