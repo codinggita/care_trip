@@ -149,6 +149,34 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
 
   // Client-side filtering (applied on top of whatever results are loaded)
   const filteredDoctors = doctors.filter((doc) => {
+    // Only show places that are clinics/hospitals (not tyre shops, retail, etc.)
+    const name = (doc.name || '').toLowerCase();
+    const specialty = (doc.specialty || '').toLowerCase();
+    const type = (doc.type || '').toLowerCase();
+    
+    const isMedicalPlace = 
+      type.includes('hospital') || 
+      type.includes('clinic') || 
+      type.includes('doctor') || 
+      type.includes('medical') ||
+      type.includes('health') ||
+      type.includes('pharmacy') ||
+      type.includes('diagnostic') ||
+      type.includes('pathology') ||
+      specialty.includes('hospital') ||
+      specialty.includes('clinic') ||
+      name.includes('hospital') ||
+      name.includes('clinic') ||
+      name.includes('doctor') ||
+      name.includes('medical') ||
+      name.includes('health') ||
+      name.includes('clinic') ||
+      name.includes('diagnostic') ||
+      name.includes('pathology') ||
+      name.includes('pharma');
+    
+    if (!isMedicalPlace) return false;
+    
     // If in search mode, don't filter by text again (server already did)
     if (!isSearchMode && searchText && 
         !doc.name.toLowerCase().includes(searchText.toLowerCase()) && 
