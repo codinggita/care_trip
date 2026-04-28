@@ -1,8 +1,29 @@
-import { useState } from 'react';
-import { X, Star, CheckCircle, Clock, Globe, BadgeCheck, Phone, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Star, CheckCircle, Clock, Globe, BadgeCheck, Phone, MapPin, Loader2 } from 'lucide-react';
+import api, { getDoctorReviews } from '../services/api';
 
 export default function DoctorProfileModal({ doctor, onClose, onBook }) {
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!doctor) return;
+      setLoadingReviews(true);
+      try {
+        const { data } = await getDoctorReviews(doctor._id || doctor.id);
+        if (data.success) {
+          setReviews(data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch doctor reviews:', error);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    fetchReviews();
+  }, [doctor]);
 
   if (!doctor) return null;
 
@@ -211,9 +232,15 @@ export default function DoctorProfileModal({ doctor, onClose, onBook }) {
 
         {/* Reviews */}
         <div className="px-6 py-4 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-700 mb-3">Traveler Reviews</h3>
+          <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center justify-between">
+            Traveler Reviews
+            {loadingReviews && <Loader2 size={14} className="animate-spin text-primary-600" />}
+          </h3>
           <div className="space-y-3">
-            {doctor.reviewsList?.map((review, idx) => (
+            {!loadingReviews && reviews.length === 0 && (
+              <p className="text-sm text-slate-500 italic">No reviews yet.</p>
+            )}
+            {reviews.map((review, idx) => (
               <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                 <p className="text-sm text-slate-700 mb-2 italic">"{review.text}"</p>
                 <div className="flex items-center justify-between">

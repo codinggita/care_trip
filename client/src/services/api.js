@@ -39,6 +39,9 @@ export const fetchNearbyDoctors = (lat, lng, distance) => api.get('/doctors/near
 export const createBooking = (data) => api.post('/bookings', data);
 export const fetchMyBookings = () => api.get('/bookings');
 export const cancelBooking = (id) => api.patch(`/bookings/${id}/cancel`);
+export const getBookedSlots = (doctorId, date) => api.get('/bookings/booked-slots', { params: { doctorId, date } });
+export const submitReview = (bookingId, data) => api.post(`/bookings/${bookingId}/review`, data);
+export const getDoctorReviews = (doctorId) => api.get(`/bookings/reviews/${doctorId}`);
 
 // --- Emergency ---
 export const sendEmergencyEmail = (data) => api.post('/emergency/email', data);

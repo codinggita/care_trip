@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, CheckCircle, ChevronRight, ChevronLeft, Clock, Check, Loader2 } from 'lucide-react';
-import api from '../services/api';
+import api, { getBookedSlots } from '../services/api';
 
 export default function BookingModal({ doctor, onClose, user, onNavigate }) {
   const [step, setStep] = useState(1);
@@ -13,6 +13,8 @@ export default function BookingModal({ doctor, onClose, user, onNavigate }) {
     language: 'English',
   });
   const [isBooking, setIsBooking] = useState(false);
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   // Generate next 7 days
   const getNextDays = () => {
@@ -38,6 +40,45 @@ export default function BookingModal({ doctor, onClose, user, onNavigate }) {
     morning: ['9:00 AM', '10:00 AM', '11:00 AM'],
     afternoon: ['2:00 PM', '3:30 PM'],
     evening: ['6:00 PM', '7:00 PM'],
+  };
+
+  useEffect(() => {
+    const fetchSlots = async () => {
+      setLoadingSlots(true);
+      setSelectedSlot(null); // Reset selection
+      try {
+        const dateStr = days[selectedDate].full;
+        const { data } = await getBookedSlots(doctor._id || doctor.id, dateStr);
+        if (data.success) {
+          setBookedSlots(data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch booked slots', error);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+    fetchSlots();
+  }, [selectedDate, doctor]);
+
+  const isSlotAvailable = (slot) => {
+    if (bookedSlots.includes(slot)) return false;
+
+    // Check if it's a past time slot for today
+    if (selectedDate === 0) { // Today
+      const [time, period] = slot.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      const now = new Date();
+      const slotTime = new Date();
+      slotTime.setHours(hours, minutes, 0, 0);
+      
+      if (slotTime < now) return false;
+    }
+    
+    return true;
   };
 
   const handleNext = () => {
@@ -146,30 +187,45 @@ export default function BookingModal({ doctor, onClose, user, onNavigate }) {
             </div>
 
             {/* Time Slots */}
-            <h4 className="text-sm font-semibold text-slate-700 mb-3">Select Time</h4>
-            {Object.entries(allSlots).map(([period, slots]) => (
-              <div key={period} className="mb-4">
-                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                  <Clock size={12} />
-                  {period}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {slots.map((slot) => (
-                    <button
-                      key={slot}
-                      onClick={() => setSelectedSlot(slot)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200
-                        ${selectedSlot === slot
-                          ? 'bg-primary-700 text-white border-primary-700 shadow-md'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-primary-400 hover:text-primary-700'
-                        }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
+            <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center justify-between">
+              Select Time
+              {loadingSlots && <Loader2 size={14} className="animate-spin text-primary-600" />}
+            </h4>
+            
+            {!loadingSlots && Object.entries(allSlots).every(([_, slots]) => slots.filter(isSlotAvailable).length === 0) && (
+              <div className="p-4 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 text-sm font-medium text-center mb-4">
+                No available time slots for this date. Please select another date.
               </div>
-            ))}
+            )}
+
+            {!loadingSlots && Object.entries(allSlots).map(([period, slots]) => {
+              const availableSlots = slots.filter(isSlotAvailable);
+              if (availableSlots.length === 0) return null;
+
+              return (
+                <div key={period} className="mb-4">
+                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <Clock size={12} />
+                    {period}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableSlots.map((slot) => (
+                      <button
+                        key={slot}
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200
+                          ${selectedSlot === slot
+                            ? 'bg-primary-700 text-white border-primary-700 shadow-md'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-primary-400 hover:text-primary-700'
+                          }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
 
             {/* Next Button */}
             <button
