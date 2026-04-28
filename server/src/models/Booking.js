@@ -15,7 +15,8 @@ const bookingSchema = new mongoose.Schema({
     enum: ['Confirmed', 'Completed', 'Cancelled'], 
     default: 'Confirmed' 
   },
-  reviewed: { type: Boolean, default: false }
+  reviewed: { type: Boolean, default: false },
+  reminderSent: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.model('Booking', bookingSchema);

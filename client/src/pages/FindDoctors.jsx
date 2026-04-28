@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, MapPin, Star, BadgeCheck, Navigation, X, Loader2, Phone } from 'lucide-react';
 import { specialties } from '../data/mockData';
 import MapplsMap from '../components/MapplsMap';
-import api from '../services/api';
+import api, { reverseGeocode, searchDoctors } from '../services/api';
 import Avatar from '../components/Avatar';
 
 export default function FindDoctors({ onViewProfile, onBookDoctor }) {
@@ -13,8 +13,25 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState(null);
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Function to get user's current location
+  // Reverse geocode to get real city name from coordinates
+  const fetchCityName = async (lat, lng) => {
+    try {
+      const { data } = await reverseGeocode(lat, lng);
+      if (data.success && data.data.formattedAddress) {
+        setLocationText(data.data.formattedAddress);
+      } else {
+        setLocationText('Current Location');
+      }
+    } catch (error) {
+      console.error('Reverse geocode error:', error);
+      setLocationText('Current Location');
+    }
+  };
+
   const getCurrentLocation = () => {
     setLocationText('Detecting location...');
     if ("geolocation" in navigator) {
@@ -25,12 +42,14 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
             lng: position.coords.longitude
           };
           setUserLocation(newLoc);
-          setLocationText('Current Location');
+          // Get real city name instead of just "Current Location"
+          fetchCityName(newLoc.lat, newLoc.lng);
         },
         (error) => {
           console.error('Geolocation error:', error);
-          setUserLocation({ lat: 23.2156, lng: 72.6369 });
-          setLocationText('Gandhinagar, India');
+          // Don't hardcode Gandhinagar — ask user to enter their location
+          setLocationText('Enter your location');
+          setUserLocation(null);
         },
         { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
       );
@@ -100,9 +119,67 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
     fetchDoctors();
   }, [userLocation, selectedSpecialty]);
 
-  // Client-side filtering
+  // Server-side search by hospital name, area, etc.
+  const handleDoctorSearch = useCallback(async () => {
+    if (!searchText.trim()) {
+      // If search is cleared, go back to nearby results
+      if (isSearchMode) {
+        setIsSearchMode(false);
+        // Re-trigger nearby fetch
+        setUserLocation(prev => prev ? { ...prev } : prev);
+      }
+      return;
+    }
+
+    setSearchLoading(true);
+    setIsSearchMode(true);
+    try {
+      const { data } = await searchDoctors(
+        searchText,
+        userLocation?.lat,
+        userLocation?.lng
+      );
+      setDoctors(data.data || []);
+    } catch (error) {
+      console.error('Search doctors error:', error);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, [searchText, userLocation, isSearchMode]);
+
+  // Client-side filtering (applied on top of whatever results are loaded)
   const filteredDoctors = doctors.filter((doc) => {
-    if (searchText && !doc.name.toLowerCase().includes(searchText.toLowerCase()) && 
+    // Only show places that are clinics/hospitals (not tyre shops, retail, etc.)
+    const name = (doc.name || '').toLowerCase();
+    const specialty = (doc.specialty || '').toLowerCase();
+    const type = (doc.type || '').toLowerCase();
+    
+    const isMedicalPlace = 
+      type.includes('hospital') || 
+      type.includes('clinic') || 
+      type.includes('doctor') || 
+      type.includes('medical') ||
+      type.includes('health') ||
+      type.includes('pharmacy') ||
+      type.includes('diagnostic') ||
+      type.includes('pathology') ||
+      specialty.includes('hospital') ||
+      specialty.includes('clinic') ||
+      name.includes('hospital') ||
+      name.includes('clinic') ||
+      name.includes('doctor') ||
+      name.includes('medical') ||
+      name.includes('health') ||
+      name.includes('clinic') ||
+      name.includes('diagnostic') ||
+      name.includes('pathology') ||
+      name.includes('pharma');
+    
+    if (!isMedicalPlace) return false;
+    
+    // If in search mode, don't filter by text again (server already did)
+    if (!isSearchMode && searchText && 
+        !doc.name.toLowerCase().includes(searchText.toLowerCase()) && 
         !doc.specialty.toLowerCase().includes(searchText.toLowerCase()) &&
         !(doc.address || '').toLowerCase().includes(searchText.toLowerCase())) {
       return false;
@@ -123,8 +200,16 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
             <input
               type="text"
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Search by name, specialty, or address..."
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                // If cleared, exit search mode
+                if (!e.target.value.trim() && isSearchMode) {
+                  setIsSearchMode(false);
+                  setUserLocation(prev => prev ? { ...prev } : prev);
+                }
+              }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleDoctorSearch(); }}
+              placeholder="Search hospital, clinic, area name..."
               className="input-field pl-9 text-sm"
             />
           </div>
@@ -148,10 +233,17 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
             </button>
           </div>
           <button 
-            onClick={() => handleLocationSearch({ key: 'Enter' })}
+            onClick={() => {
+              if (searchText.trim()) {
+                handleDoctorSearch();
+              } else {
+                handleLocationSearch({ key: 'Enter' });
+              }
+            }}
+            disabled={searchLoading}
             className="btn-primary px-4 py-2 text-sm flex items-center gap-2"
           >
-            <Search size={14} /> Search
+            {searchLoading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />} Search
           </button>
         </div>
       </div>
@@ -226,9 +318,9 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
       {/* Results count */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-slate-500">
-          Showing <span className="font-bold text-slate-900">{filteredDoctors.length}</span> results nearby
+          Showing <span className="font-bold text-slate-900">{filteredDoctors.length}</span> results {isSearchMode ? `for "${searchText}"` : 'nearby'}
         </p>
-        {loading && <Loader2 size={16} className="animate-spin text-primary-600" />}
+        {(loading || searchLoading) && <Loader2 size={16} className="animate-spin text-primary-600" />}
       </div>
 
       {/* Main Grid: Cards + Map */}
