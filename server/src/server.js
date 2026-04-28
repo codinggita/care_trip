@@ -14,6 +14,7 @@ import bookingRoutes from './routes/bookingRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import emergencyRoutes from './routes/emergencyRoutes.js';
 import placesRoutes from './routes/placesRoutes.js';
+import { startReminderScheduler } from './jobs/reminderScheduler.js';
 
 const app = express();
 
@@ -42,6 +43,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/caretrip'
     console.log('MongoDB connected');
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+      // Start the appointment reminder cron job
+      startReminderScheduler();
     });
   })
   .catch(err => {

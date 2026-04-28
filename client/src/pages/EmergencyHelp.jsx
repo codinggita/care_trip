@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Phone, MapPin, CheckCircle, Navigation, AlertTriangle, IdCard, Pill, Smartphone, Send, MessageCircle, Star, Clock, ExternalLink, Loader2, Search } from 'lucide-react';
 import { safetyTips } from '../data/mockData';
 import MapplsMap from '../components/MapplsMap';
-import api from '../services/api';
+import api, { reverseGeocode } from '../services/api';
 
 import Avatar from '../components/Avatar';
 
@@ -22,6 +22,21 @@ export default function EmergencyHelp() {
 
   const [locationText, setLocationText] = useState('Detecting location...');
 
+  // Reverse geocode to get real city name from coordinates
+  const fetchCityName = async (lat, lng) => {
+    try {
+      const { data } = await reverseGeocode(lat, lng);
+      if (data.success && data.data.formattedAddress) {
+        setLocationText(data.data.formattedAddress);
+      } else {
+        setLocationText('Current Location');
+      }
+    } catch (error) {
+      console.error('Reverse geocode error:', error);
+      setLocationText('Current Location');
+    }
+  };
+
   const getCurrentLocation = () => {
     setLocationText('Detecting location...');
     if ("geolocation" in navigator) {
@@ -32,12 +47,14 @@ export default function EmergencyHelp() {
             lng: position.coords.longitude
           };
           setUserLocation(loc);
-          setLocationText('Current Location');
+          // Get real city name instead of just "Current Location"
+          fetchCityName(loc.lat, loc.lng);
         },
         (error) => {
           console.error('Geolocation error:', error);
-          setUserLocation({ lat: 23.2156, lng: 72.6369 });
-          setLocationText('Gandhinagar, India');
+          // Don't hardcode Gandhinagar — ask user to enter their location
+          setLocationText('Enter your location');
+          setUserLocation(null);
         }
       );
     } else {

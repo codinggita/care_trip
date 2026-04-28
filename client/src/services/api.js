@@ -47,4 +47,8 @@ export const getDoctorReviews = (doctorId) => api.get(`/bookings/reviews/${docto
 export const sendEmergencyEmail = (data) => api.post('/emergency/email', data);
 export const getWhatsAppSOSLink = (location) => api.get('/emergency/whatsapp-link', { params: { location } });
 
+// --- Places ---
+export const reverseGeocode = (lat, lng) => api.get('/places/reverse-geocode', { params: { lat, lng } });
+export const searchDoctors = (query, lat, lng) => api.get('/places/search-doctors', { params: { query, lat, lng } });
+
 export default api;
