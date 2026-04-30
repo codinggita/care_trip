@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Auto-fix if user forgot to add /api to their Vercel environment variable
+if (baseUrl && !baseUrl.endsWith('/api') && !baseUrl.includes('localhost')) {
+  baseUrl = `${baseUrl}/api`;
+}
+const API_URL = baseUrl;
 
 const api = axios.create({
   baseURL: API_URL,
