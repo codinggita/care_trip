@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { login, register, googleLogin } from '../services/api';
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -28,14 +28,9 @@ const Login = () => {
     setError(null);
 
     try {
-      const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-      const payload = isRegister
-        ? { name, email, password, role }
-        : { email, password };
-
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const cleanBase = (API_BASE.endsWith('/api') && !endpoint.startsWith('/api')) ? API_BASE : API_BASE.replace('/api', '');
-      const res = await axios.post(`${cleanBase}${endpoint}`, payload);
+      const res = isRegister 
+        ? await register({ name, email, password, role })
+        : await login({ email, password });
 
       if (res.data.success) {
         localStorage.setItem('caretrip_token', res.data.token);
@@ -54,9 +49,7 @@ const Login = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const authUrl = API_BASE.endsWith('/api') ? `${API_BASE}/auth/google` : `${API_BASE}/api/auth/google`;
-      const res = await axios.post(authUrl, {
+      const res = await googleLogin({
         credential: credentialResponse.credential,
         role // Pass role in case they are registering via Google for the first time
       });
