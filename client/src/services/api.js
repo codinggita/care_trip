@@ -1,10 +1,21 @@
 import axios from 'axios';
 
-let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-// Auto-fix if user forgot to add /api to their Vercel environment variable
-if (baseUrl && !baseUrl.endsWith('/api') && !baseUrl.includes('localhost')) {
+let rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// Remove trailing slash if it exists
+let baseUrl = rawUrl.replace(/\/+$/, '');
+
+// If it's a production Render URL and doesn't end with /api, force append it
+if (baseUrl.includes('onrender.com') && !baseUrl.endsWith('/api')) {
   baseUrl = `${baseUrl}/api`;
 }
+
+// Ensure it has /api if it's localhost and missing it
+if (baseUrl.includes('localhost') && !baseUrl.endsWith('/api')) {
+  baseUrl = `${baseUrl}/api`;
+}
+
+console.log('📡 API Base URL configured as:', baseUrl);
 const API_URL = baseUrl;
 
 const api = axios.create({
