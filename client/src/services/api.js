@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -50,5 +50,18 @@ export const getWhatsAppSOSLink = (location) => api.get('/emergency/whatsapp-lin
 // --- Places ---
 export const reverseGeocode = (lat, lng) => api.get('/places/reverse-geocode', { params: { lat, lng } });
 export const searchDoctors = (query, lat, lng) => api.get('/places/search-doctors', { params: { query, lat, lng } });
+
+// --- Doctor Dashboard ---
+export const getDoctorDashProfile = () => api.get('/doctor-dash/profile');
+export const updateDoctorDashProfile = (data) => api.put('/doctor-dash/profile', data);
+export const verifyDoctorRegistration = (data) => api.post('/doctor-dash/verify', data);
+export const requestDoctorApproval = (data) => api.post('/doctor-dash/request-approval', data);
+
+// --- Admin ---
+export const getPendingDoctors = () => api.get('/admin/pending-doctors');
+export const approveDoctor = (id) => api.patch(`/admin/doctors/${id}/approve`);
+export const rejectDoctor = (id) => api.patch(`/admin/doctors/${id}/reject`);
+export const getAdminStats = () => api.get('/admin/stats');
+export const getAllDoctorsAdmin = () => api.get('/admin/all-doctors');
 
 export default api;

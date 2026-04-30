@@ -2,6 +2,103 @@ import express from 'express';
 
 const router = express.Router();
 
+const fetchVerifiedMongoDoctors = async (lat, lng, distanceKm = 50) => {
+  try {
+    const Doctor = (await import('../models/Doctor.js')).default;
+    const refLat = parseFloat(lat);
+    const refLng = parseFloat(lng);
+    const maxDistMeters = distanceKm * 1000;
+
+    const mongoDoctors = await Doctor.find({
+      verificationStatus: 'verified',
+    }).limit(50);
+
+    return mongoDoctors
+      .map((doc) => {
+        const coords = doc.location?.coordinates;
+        if (!coords || coords.length !== 2 || !coords[0] || !coords[1]) {
+          // Return doctor without distance if no coordinates
+          return {
+            _id: doc._id.toString(),
+            name: doc.name,
+            specialty: doc.specialty || 'General Physician',
+            address: doc.clinicAddress || doc.clinicName || 'Address not available',
+            location: undefined,
+            rating: doc.rating || 0,
+            reviews: doc.reviews || 0,
+            fee: doc.fee,
+            estimatedTreatment: doc.estimatedTreatment,
+            initials: doc.initials || doc.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'DR',
+            color: doc.color || 'bg-primary-700',
+            languages: doc.languages || ['English'],
+            verified: true,
+            isRegisteredDoctor: true,
+            bio: doc.bio,
+            qualifications: doc.qualifications,
+            experience: doc.experience,
+            availableDays: doc.availableDays,
+            timeSlots: doc.timeSlots,
+            clinicName: doc.clinicName,
+            clinicPhone: doc.clinicPhone,
+            phone: doc.clinicPhone,
+            phones: doc.clinicPhone ? [doc.clinicPhone] : [],
+            picture: doc.picture,
+            registrationNumber: doc.registrationNumber,
+            distanceMeters: null,
+            distance: null,
+          };
+        }
+
+        const docLng = coords[0];
+        const docLat = coords[1];
+        const dist = calculateDistance(refLat, refLng, docLat, docLng);
+        if (dist > maxDistMeters) return null;
+
+        return {
+          _id: doc._id.toString(),
+          name: doc.name,
+          specialty: doc.specialty || 'General Physician',
+          address: doc.clinicAddress || doc.clinicName || 'Address not available',
+          location: { coordinates: coords },
+          rating: doc.rating || 0,
+          reviews: doc.reviews || 0,
+          fee: doc.fee,
+          estimatedTreatment: doc.estimatedTreatment,
+          initials: doc.initials || doc.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'DR',
+          color: doc.color || 'bg-primary-700',
+          languages: doc.languages || ['English'],
+          verified: true,
+          isRegisteredDoctor: true,
+          bio: doc.bio,
+          qualifications: doc.qualifications,
+          experience: doc.experience,
+          availableDays: doc.availableDays,
+          timeSlots: doc.timeSlots,
+          clinicName: doc.clinicName,
+          clinicPhone: doc.clinicPhone,
+          phone: doc.clinicPhone,
+          phones: doc.clinicPhone ? [doc.clinicPhone] : [],
+          picture: doc.picture,
+          registrationNumber: doc.registrationNumber,
+          distanceMeters: Math.round(dist),
+          distance: `${(dist / 1000).toFixed(1)} km`,
+        };
+      })
+      .filter(Boolean);
+  } catch (err) {
+    console.warn('Failed to fetch verified MongoDB doctors:', err.message);
+    return [];
+  }
+};
+
+const calculateDistance = (lat1, lng1, lat2, lng2) => {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 // @desc    Geocode address to coordinates using Mappls Geocoding API
 // @route   GET /api/places/geocode
 router.get('/geocode', async (req, res) => {
@@ -476,7 +573,12 @@ router.get('/nearby-doctors', async (req, res) => {
     // Sort by distance
     doctors.sort((a, b) => (a.distanceMeters || 99999) - (b.distanceMeters || 99999));
 
-    res.status(200).json({ success: true, count: doctors.length, data: doctors });
+    // Fetch verified MongoDB doctors and merge
+    const mongoDoctors = await fetchVerifiedMongoDoctors(lat, lng, radius / 1000);
+    const allDoctors = [...doctors, ...mongoDoctors];
+    allDoctors.sort((a, b) => (a.distanceMeters || 99999) - (b.distanceMeters || 99999));
+
+    res.status(200).json({ success: true, count: allDoctors.length, data: allDoctors });
   } catch (error) {
     console.error('Nearby doctors error:', error);
     res.status(500).json({ success: false, message: 'Server error fetching nearby doctors' });
@@ -615,7 +717,75 @@ router.get('/search-doctors', async (req, res) => {
     // Sort by distance
     doctors.sort((a, b) => (a.distanceMeters || 99999) - (b.distanceMeters || 99999));
 
-    res.status(200).json({ success: true, count: doctors.length, data: doctors });
+    // Also search verified MongoDB doctors by name/specialty
+    try {
+      const Doctor = (await import('../models/Doctor.js')).default;
+      const searchRegex = new RegExp(query, 'i');
+      const mongoDoctors = await Doctor.find({
+        verificationStatus: 'verified',
+        $or: [
+          { name: searchRegex },
+          { specialty: searchRegex },
+          { clinicName: searchRegex },
+          { qualifications: searchRegex },
+        ],
+      }).limit(20);
+
+      const sLat = parseFloat(lat) || parseFloat(refLat) || 22.3;
+      const sLng = parseFloat(lng) || parseFloat(refLng) || 73.1;
+
+      const mongoFormatted = mongoDoctors
+        .map((doc) => {
+          const coords = doc.location?.coordinates;
+          let dist = null;
+          let distance = null;
+
+          if (coords && coords.length === 2 && coords[0] && coords[1]) {
+            const docLat = coords[1];
+            const docLng = coords[0];
+            dist = Math.round(calculateDistance(sLat, sLng, docLat, docLng));
+            distance = `${(dist / 1000).toFixed(1)} km`;
+          }
+
+          return {
+            _id: doc._id.toString(),
+            name: doc.name,
+            specialty: doc.specialty || 'General Physician',
+            address: doc.clinicAddress || doc.clinicName || 'Address not available',
+            location: coords ? { coordinates: coords } : undefined,
+            rating: doc.rating || 0,
+            reviews: doc.reviews || 0,
+            fee: doc.fee,
+            initials: doc.initials || doc.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'DR',
+            color: doc.color || 'bg-primary-700',
+            languages: doc.languages || ['English'],
+            verified: true,
+            isRegisteredDoctor: true,
+            bio: doc.bio,
+            qualifications: doc.qualifications,
+            experience: doc.experience,
+            availableDays: doc.availableDays,
+            timeSlots: doc.timeSlots,
+            clinicName: doc.clinicName,
+            clinicPhone: doc.clinicPhone,
+            phone: doc.clinicPhone,
+            phones: doc.clinicPhone ? [doc.clinicPhone] : [],
+            picture: doc.picture,
+            registrationNumber: doc.registrationNumber,
+            distanceMeters: dist,
+            distance: distance,
+          };
+        });
+
+      // Merge and sort by distance (doctors without distance go to the end)
+      const allDoctors = [...doctors, ...mongoFormatted];
+      allDoctors.sort((a, b) => (a.distanceMeters || 99999) - (b.distanceMeters || 99999));
+
+      res.status(200).json({ success: true, count: allDoctors.length, data: allDoctors });
+    } catch (mongoErr) {
+      console.warn('MongoDB search fallback:', mongoErr.message);
+      res.status(200).json({ success: true, count: doctors.length, data: doctors });
+    }
   } catch (error) {
     console.error('Search doctors error:', error);
     res.status(500).json({ success: false, message: 'Server error searching doctors' });

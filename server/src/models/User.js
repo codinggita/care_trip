@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema({
   chronicConditions: { type: String, default: 'None' },
   bloodGroup: { type: String },
   emergencyWhatsApp: { type: String },
-  emergencyEmail: { type: String }
+  emergencyEmail: { type: String },
+  doctorProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' }
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);

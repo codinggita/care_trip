@@ -269,3 +269,25 @@ export const getDoctorReviews = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+// @desc    Get bookings for a specific doctor (doctor's own view)
+// @route   GET /api/bookings/doctor/:doctorId
+export const getDoctorBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({ doctorId: req.params.doctorId })
+      .sort('-createdAt')
+      .lean();
+
+    // Enrich with patient info
+    const enriched = await Promise.all(bookings.map(async (b) => {
+      const patient = await User.findById(b.patientId).select('name email picture');
+      return { ...b, patientId: patient || { name: 'Unknown' } };
+    }));
+
+    res.status(200).json({ success: true, data: enriched });
+  } catch (error) {
+    console.error('Get doctor bookings error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+

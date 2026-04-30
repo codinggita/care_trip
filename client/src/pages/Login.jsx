@@ -16,6 +16,12 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const getRedirectPath = (role) => {
+    if (role === 'Doctor') return '/doctor-dashboard';
+    if (role === 'Admin') return '/admin-dashboard';
+    return '/dashboard';
+  };
+
   const handleManualAuth = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -32,7 +38,7 @@ const Login = () => {
       if (res.data.success) {
         localStorage.setItem('caretrip_token', res.data.token);
         localStorage.setItem('caretrip_user', JSON.stringify(res.data.user));
-        navigate('/dashboard');
+        navigate(getRedirectPath(res.data.user.role));
       }
     } catch (err) {
       console.error('Authentication Error:', err);
@@ -54,7 +60,7 @@ const Login = () => {
       if (res.data.success) {
         localStorage.setItem('caretrip_token', res.data.token);
         localStorage.setItem('caretrip_user', JSON.stringify(res.data.user));
-        navigate('/dashboard');
+        navigate(getRedirectPath(res.data.user.role));
       }
     } catch (err) {
       console.error('Google Auth Error:', err);

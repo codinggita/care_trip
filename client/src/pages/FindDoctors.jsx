@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, MapPin, Star, BadgeCheck, Navigation, X, Loader2, Phone } from 'lucide-react';
+import { Search, MapPin, Star, BadgeCheck, Navigation, X, Loader2, Phone, Award } from 'lucide-react';
 import { specialties } from '../data/mockData';
 import MapplsMap from '../components/MapplsMap';
 import api, { reverseGeocode, searchDoctors } from '../services/api';
@@ -149,15 +149,18 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
 
   // Client-side filtering (applied on top of whatever results are loaded)
   const filteredDoctors = doctors.filter((doc) => {
+    // Registered CareTrip doctors are always shown
+    if (doc.isRegisteredDoctor) return true;
+
     // Only show places that are clinics/hospitals (not tyre shops, retail, etc.)
     const name = (doc.name || '').toLowerCase();
     const specialty = (doc.specialty || '').toLowerCase();
     const type = (doc.type || '').toLowerCase();
-    
-    const isMedicalPlace = 
-      type.includes('hospital') || 
-      type.includes('clinic') || 
-      type.includes('doctor') || 
+
+    const isMedicalPlace =
+      type.includes('hospital') ||
+      type.includes('clinic') ||
+      type.includes('doctor') ||
       type.includes('medical') ||
       type.includes('health') ||
       type.includes('pharmacy') ||
@@ -174,12 +177,12 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
       name.includes('diagnostic') ||
       name.includes('pathology') ||
       name.includes('pharma');
-    
+
     if (!isMedicalPlace) return false;
-    
+
     // If in search mode, don't filter by text again (server already did)
-    if (!isSearchMode && searchText && 
-        !doc.name.toLowerCase().includes(searchText.toLowerCase()) && 
+    if (!isSearchMode && searchText &&
+        !doc.name.toLowerCase().includes(searchText.toLowerCase()) &&
         !doc.specialty.toLowerCase().includes(searchText.toLowerCase()) &&
         !(doc.address || '').toLowerCase().includes(searchText.toLowerCase())) {
       return false;
@@ -363,7 +366,14 @@ export default function FindDoctors({ onViewProfile, onBookDoctor }) {
                   <div className="flex items-start gap-3 mb-2">
                     <Avatar doc={doc} className="w-11 h-11 text-sm group-hover:scale-105 transition-transform duration-300" />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-900 text-sm truncate">{doc.name}</h3>
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-semibold text-slate-900 text-sm truncate">{doc.name}</h3>
+                        {doc.isRegisteredDoctor && (
+                          <span className="flex-shrink-0 p-0.5 rounded bg-emerald-100" title="Registered on CareTrip">
+                            <Award size={12} className="text-emerald-700" />
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-500">{doc.specialty}</p>
                     </div>
                     {doc.distance && (
