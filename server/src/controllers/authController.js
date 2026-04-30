@@ -2,6 +2,7 @@ import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
+import Doctor from '../models/Doctor.js';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -43,6 +44,13 @@ export const googleLogin = async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // If doctor, load verification status
+    let verificationStatus = null;
+    if (user.role === 'Doctor' && user.doctorProfile) {
+      const doc = await Doctor.findById(user.doctorProfile);
+      verificationStatus = doc?.verificationStatus || 'unverified';
+    }
+
     res.status(200).json({
       success: true,
       token,
@@ -51,7 +59,8 @@ export const googleLogin = async (req, res) => {
         name: user.name,
         email: user.email,
         picture: user.picture,
-        role: user.role
+        role: user.role,
+        verificationStatus
       }
     });
 
@@ -80,12 +89,25 @@ export const register = async (req, res) => {
       role: role || 'Traveler'
     });
 
+    // Auto-create Doctor profile if registering as Doctor
+    if (user.role === 'Doctor') {
+      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      const doctorProfile = await Doctor.create({
+        name,
+        userId: user._id,
+        initials,
+        languages: ['English'],
+      });
+      user.doctorProfile = doctorProfile._id;
+      await user.save();
+    }
+
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
       success: true,
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, verificationStatus: 'unverified' }
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -113,10 +135,17 @@ export const login = async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
+    // If doctor, load verification status
+    let verificationStatus = null;
+    if (user.role === 'Doctor' && user.doctorProfile) {
+      const doc = await Doctor.findById(user.doctorProfile);
+      verificationStatus = doc?.verificationStatus || 'unverified';
+    }
+
     res.status(200).json({
       success: true,
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, verificationStatus }
     });
   } catch (error) {
     console.error('Login error:', error);
