@@ -33,7 +33,9 @@ const Login = () => {
         ? { name, email, password, role }
         : { email, password };
 
-      const res = await axios.post(`http://localhost:5000${endpoint}`, payload);
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const cleanBase = (API_BASE.endsWith('/api') && !endpoint.startsWith('/api')) ? API_BASE : API_BASE.replace('/api', '');
+      const res = await axios.post(`${cleanBase}${endpoint}`, payload);
 
       if (res.data.success) {
         localStorage.setItem('caretrip_token', res.data.token);
@@ -52,7 +54,9 @@ const Login = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/google', {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const authUrl = API_BASE.endsWith('/api') ? `${API_BASE}/auth/google` : `${API_BASE}/api/auth/google`;
+      const res = await axios.post(authUrl, {
         credential: credentialResponse.credential,
         role // Pass role in case they are registering via Google for the first time
       });
