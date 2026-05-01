@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ allowedRoles }) => {
-  const token = localStorage.getItem('caretrip_token');
-  const user = JSON.parse(localStorage.getItem('caretrip_user') || 'null');
+  const { token, user } = useSelector((state) => state.auth);
 
   if (!token) {
     // Not logged in, redirect to login page

@@ -1,7 +1,9 @@
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Edit, LogOut, Bell, Mail, MapPin, Globe, User, Plane, Heart, Settings, Save, X, Check, AlertCircle } from 'lucide-react';
 import api from '../services/api';
+import { updateUser, logout } from '../store';
 
 // Default empty profile — no dummy data
 const emptyProfile = {
@@ -52,7 +54,8 @@ const Toggle = ({ enabled, onToggle }) => (
 );
 
 export default function Profile() {
-  const { user, onProfileUpdate } = useOutletContext();
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Load saved profile or start empty
@@ -126,12 +129,7 @@ export default function Profile() {
       const { data } = await api.put('/profile', updated);
       
       setProfile(data.data);
-      localStorage.setItem('caretrip_user', JSON.stringify(data.data));
-      
-      // Notify parent component to update user state
-      if (onProfileUpdate) {
-        onProfileUpdate(data.data);
-      }
+      dispatch(updateUser(data.data));
       
       setEditing(null);
       setDraft({});
@@ -150,8 +148,7 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('caretrip_token');
-    localStorage.removeItem('caretrip_user');
+    dispatch(logout());
     navigate('/');
   };
 
