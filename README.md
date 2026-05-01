@@ -2,6 +2,12 @@
 
 CareTrip is a specialized healthcare platform designed for international travelers to find verified, language-compatible medical care wherever they are. It bridges the gap between travelers and local healthcare providers, ensuring peace of mind during medical emergencies or planned procedures abroad.
 
+## 🔗 Project Links
+
+- **Live Demo**: [care-trip-frontend.vercel.app](https://care-trip-frontend.vercel.app/)
+- **Figma Design**: [UI/UX Prototype](https://www.figma.com/proto/DSdKqksDFdXESRzpUY1ZLN/Untitled?node-id=151-3&viewport=782%2C-230%2C0.08&t=0Z5NodkmPsFaaEDC-0&scaling=scale-down&content-scaling=fixed&starting-point-node-id=151%3A3)
+- **API Documentation**: [Postman Collection](https://documenter.getpostman.com/view/50841045/2sBXqKnzCC)
+
 ---
 
 ## 🌟 Key Features
