@@ -7,6 +7,7 @@ import BookingModal from '../components/BookingModal';
 import DoctorProfileModal from '../components/DoctorProfileModal';
 import api from '../services/api';
 import { updateUser } from '../store';
+import SEO from '../components/SEO';
 
 export default function Dashboard() {
   const dispatch = useDispatch();
@@ -88,6 +89,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-surface">
+      <SEO 
+        title={sectionTitles[activeSection] || 'User Dashboard'} 
+        description={`Manage your ${sectionTitles[activeSection] || 'Dashboard'} on CareTrip. Access medical services and emergency help.`}
+      />
       <Navbar
         user={user}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
