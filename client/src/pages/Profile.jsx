@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Edit, LogOut, Bell, Mail, MapPin, Globe, User, Plane, Heart, Settings, Save, X, Check, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 import { updateUser, logout } from '../store';
+import SEO from '../components/SEO';
 
 // Default empty profile — no dummy data
 const emptyProfile = {
@@ -237,6 +238,10 @@ export default function Profile() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl">
+      <SEO 
+        title="My Profile" 
+        description="View and manage your personal, travel, and medical profile on CareTrip."
+      />
       {/* Success Message */}
       {saveMessage && (
         <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium animate-slide-up">

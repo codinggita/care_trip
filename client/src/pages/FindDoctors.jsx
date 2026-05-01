@@ -5,6 +5,7 @@ import { specialties } from '../data/mockData';
 import MapplsMap from '../components/MapplsMap';
 import api, { reverseGeocode, searchDoctors } from '../services/api';
 import Avatar from '../components/Avatar';
+import SEO from '../components/SEO';
 
 export default function FindDoctors() {
   const { onViewProfile, onBookDoctor } = useOutletContext();
@@ -196,9 +197,17 @@ export default function FindDoctors() {
   });
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" role="main" aria-labelledby="find-doctors-title">
+      <SEO 
+        title="Find Doctors" 
+        description="Search for world-class verified doctors, clinics, and hospitals. Filter by specialty, rating, and location."
+        ogType="profile"
+      />
+      {/* Hidden H1 for accessibility */}
+      <h1 id="find-doctors-title" className="sr-only">Find Doctors and Hospitals</h1>
+
       {/* Search Bar */}
-      <div className="card p-4 mb-5">
+      <div className="card p-4 mb-5" role="search">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -321,7 +330,7 @@ export default function FindDoctors() {
       </div>
 
       {/* Results count */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4" aria-live="polite">
         <p className="text-sm text-slate-500">
           Showing <span className="font-bold text-slate-900">{filteredDoctors.length}</span> results {isSearchMode ? `for "${searchText}"` : 'nearby'}
         </p>

@@ -113,6 +113,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-surface">
+      <SEO 
+        title={`Admin ${sectionTitles[activeSection]}`} 
+        description={`CareTrip Admin Portal - ${sectionTitles[activeSection]}. Platform management and doctor verification.`}
+      />
       <Navbar user={user} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
       <AdminSidebar activeSection={activeSection} onNavigate={handleNavigate} isOpen={sidebarOpen} pendingCount={pendingDocs.length} />
 
