@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /doctor-dashboard/
+Disallow: /admin-dashboard/
+
+# Sitemap location
+Sitemap: https://caretrip.vercel.app/sitemap.xml
