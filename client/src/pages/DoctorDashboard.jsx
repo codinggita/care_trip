@@ -10,6 +10,7 @@ import Profile from './Profile';
 import { getDoctorDashProfile } from '../services/api';
 import api from '../services/api';
 import { updateUser } from '../store';
+import SEO from '../components/SEO';
 
 export default function DoctorDashboard() {
   const dispatch = useDispatch();
@@ -91,6 +92,10 @@ export default function DoctorDashboard() {
 
   return (
     <div className="min-h-screen bg-surface">
+      <SEO 
+        title={`Doctor ${sectionTitles[activeSection]}`} 
+        description={`CareTrip Doctor Portal - ${sectionTitles[activeSection]}. Manage your clinic and appointments.`}
+      />
       <Navbar
         user={user}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
