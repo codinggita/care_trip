@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import AdminSidebar from '../components/AdminSidebar';
 import { getAdminStats, getPendingDoctors, getAllDoctorsAdmin, approveDoctor, rejectDoctor } from '../services/api';
 import api from '../services/api';
+import SEO from '../components/SEO';
 import { Users, Clock, CheckCircle, Activity, XCircle, ShieldCheck, Search, ChevronDown } from 'lucide-react';
 import { updateUser } from '../store';
 
