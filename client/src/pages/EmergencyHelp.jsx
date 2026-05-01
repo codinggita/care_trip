@@ -1,3 +1,4 @@
+import { useOutletContext } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Phone, MapPin, CheckCircle, Navigation, AlertTriangle, IdCard, Pill, Smartphone, Send, MessageCircle, Star, Clock, ExternalLink, Loader2, Search } from 'lucide-react';
 import { safetyTips } from '../data/mockData';
@@ -14,6 +15,7 @@ const tipIcons = {
 };
 
 export default function EmergencyHelp() {
+  const { onNavigate } = useOutletContext();
   const [userLocation, setUserLocation] = useState(null);
   const [sendingSOS, setSendingSOS] = useState(false);
   const [sosStatus, setSosStatus] = useState(null);

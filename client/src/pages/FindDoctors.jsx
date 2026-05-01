@@ -1,3 +1,4 @@
+import { useOutletContext } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import { Search, MapPin, Star, BadgeCheck, Navigation, X, Loader2, Phone, Award } from 'lucide-react';
 import { specialties } from '../data/mockData';
@@ -5,7 +6,8 @@ import MapplsMap from '../components/MapplsMap';
 import api, { reverseGeocode, searchDoctors } from '../services/api';
 import Avatar from '../components/Avatar';
 
-export default function FindDoctors({ onViewProfile, onBookDoctor }) {
+export default function FindDoctors() {
+  const { onViewProfile, onBookDoctor } = useOutletContext();
   const [searchText, setSearchText] = useState('');
   const [locationText, setLocationText] = useState('Detecting location...');
   const [selectedSpecialty, setSelectedSpecialty] = useState('');

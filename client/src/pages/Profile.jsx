@@ -1,6 +1,6 @@
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Edit, LogOut, Bell, Mail, MapPin, Globe, User, Plane, Heart, Settings, Save, X, Check, AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 // Default empty profile — no dummy data
@@ -51,7 +51,8 @@ const Toggle = ({ enabled, onToggle }) => (
   </button>
 );
 
-export default function Profile({ user, onProfileUpdate }) {
+export default function Profile() {
+  const { user, onProfileUpdate } = useOutletContext();
   const navigate = useNavigate();
 
   // Load saved profile or start empty

@@ -1,11 +1,12 @@
+import { Link } from 'react-router-dom';
 import { Home, Search, AlertTriangle, Calendar, User } from 'lucide-react';
 
 const navItems = [
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'find-doctors', label: 'Find Doctors', icon: Search },
-  { id: 'emergency', label: 'Emergency Help', icon: AlertTriangle },
-  { id: 'bookings', label: 'My Bookings', icon: Calendar },
-  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'home', label: 'Home', icon: Home, path: '' },
+  { id: 'find-doctors', label: 'Find Doctors', icon: Search, path: 'find-doctors' },
+  { id: 'emergency', label: 'Emergency Help', icon: AlertTriangle, path: 'emergency' },
+  { id: 'bookings', label: 'My Bookings', icon: Calendar, path: 'bookings' },
+  { id: 'profile', label: 'Profile', icon: User, path: 'profile' },
 ];
 
 export default function Sidebar({ activeSection, onNavigate, isOpen }) {
@@ -23,9 +24,10 @@ export default function Sidebar({ activeSection, onNavigate, isOpen }) {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
             return (
-              <button
+              <Link
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
+                to={`/dashboard/${item.path}`}
+                onClick={onNavigate}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
                            transition-all duration-200 group
                            ${isActive
@@ -42,7 +44,7 @@ export default function Sidebar({ activeSection, onNavigate, isOpen }) {
                 {item.id === 'emergency' && (
                   <span className={`ml-auto w-2 h-2 rounded-full ${isActive ? 'bg-red-300' : 'bg-red-500'} animate-pulse`} />
                 )}
-              </button>
+              </Link>
             );
           })}
         </nav>
@@ -63,9 +65,10 @@ export default function Sidebar({ activeSection, onNavigate, isOpen }) {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
             return (
-              <button
+              <Link
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
+                to={`/dashboard/${item.path}`}
+                onClick={onNavigate}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg
                            transition-all duration-200 min-w-[56px]
                            ${isActive ? 'text-primary-700' : 'text-slate-400 hover:text-slate-600'}`}
@@ -75,7 +78,7 @@ export default function Sidebar({ activeSection, onNavigate, isOpen }) {
                 {isActive && (
                   <div className="absolute top-0 w-8 h-0.5 rounded-full bg-primary-700" />
                 )}
-              </button>
+              </Link>
             );
           })}
         </div>
