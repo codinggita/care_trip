@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import { login, register, googleLogin } from '../services/api';
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [role, setRole] = useState('Traveler');
-
-  // Form State
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -22,28 +18,48 @@ const Login = () => {
     return '/dashboard';
   };
 
-  const handleManualAuth = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  const validationSchema = Yup.object({
+    name: isRegister 
+      ? Yup.string()
+          .min(2, 'Name must be at least 2 characters')
+          .required('Full Name is required')
+      : Yup.string(),
+    email: Yup.string()
+      .email('Invalid email address')
+      .required('Email address is required'),
+    password: Yup.string()
+      .min(6, 'Password must be at least 6 characters')
+      .required('Password is required'),
+  });
 
-    try {
-      const res = isRegister 
-        ? await register({ name, email, password, role })
-        : await login({ email, password });
+  const formik = useFormik({
+    initialValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = isRegister
+          ? await register({ ...values, role })
+          : await login({ email: values.email, password: values.password });
 
-      if (res.data.success) {
-        localStorage.setItem('caretrip_token', res.data.token);
-        localStorage.setItem('caretrip_user', JSON.stringify(res.data.user));
-        navigate(getRedirectPath(res.data.user.role));
+        if (res.data.success) {
+          localStorage.setItem('caretrip_token', res.data.token);
+          localStorage.setItem('caretrip_user', JSON.stringify(res.data.user));
+          navigate(getRedirectPath(res.data.user.role));
+        }
+      } catch (err) {
+        console.error('Authentication Error:', err);
+        setError(err.response?.data?.message || 'Authentication failed. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error('Authentication Error:', err);
-      setError(err.response?.data?.message || 'Authentication failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
   const handleGoogleSuccess = async (credentialResponse) => {
     setIsLoading(true);
@@ -109,18 +125,22 @@ const Login = () => {
           </div>
 
           {/* Manual Auth Form */}
-          <form onSubmit={handleManualAuth} className="space-y-3">
+          <form onSubmit={formik.handleSubmit} className="space-y-3">
             {isRegister && (
               <div>
                 <label className="block text-base font-semibold text-gray-700 mb-1.5">Full Name</label>
                 <input
                   type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none text-base"
+                  name="name"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.name}
+                  className={`w-full px-4 py-2.5 rounded-xl border ${formik.touched.name && formik.errors.name ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none text-base`}
                   placeholder="John Doe"
                 />
+                {formik.touched.name && formik.errors.name ? (
+                  <div className="text-red-500 text-xs mt-1 ml-1 font-medium">{formik.errors.name}</div>
+                ) : null}
               </div>
             )}
 
@@ -128,24 +148,32 @@ const Login = () => {
               <label className="block text-base font-semibold text-gray-700 mb-1.5">Email Address</label>
               <input
                 type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none text-base"
+                name="email"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.email}
+                className={`w-full px-4 py-2.5 rounded-xl border ${formik.touched.email && formik.errors.email ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none text-base`}
                 placeholder="you@example.com"
               />
+              {formik.touched.email && formik.errors.email ? (
+                <div className="text-red-500 text-xs mt-1 ml-1 font-medium">{formik.errors.email}</div>
+              ) : null}
             </div>
 
             <div>
               <label className="block text-base font-semibold text-gray-700 mb-1.5">Password</label>
               <input
                 type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none text-base"
+                name="password"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.password}
+                className={`w-full px-4 py-2.5 rounded-xl border ${formik.touched.password && formik.errors.password ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none text-base`}
                 placeholder="••••••••"
               />
+              {formik.touched.password && formik.errors.password ? (
+                <div className="text-red-500 text-xs mt-1 ml-1 font-medium">{formik.errors.password}</div>
+              ) : null}
             </div>
 
             {error && (
@@ -156,8 +184,8 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-primary-700 hover:bg-primary-800 active:bg-primary-900 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-primary-700/30 flex justify-center items-center mt-2 select-none focus:outline-none focus:ring-0"
+              disabled={isLoading || !formik.isValid}
+              className={`w-full bg-primary-700 hover:bg-primary-800 active:bg-primary-900 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-primary-700/30 flex justify-center items-center mt-2 select-none focus:outline-none focus:ring-0 ${(!formik.isValid || isLoading) ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {isLoading ? (
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -192,7 +220,7 @@ const Login = () => {
           <p className="text-center mt-4 text-sm text-gray-600">
             {isRegister ? "Already have an account?" : "Don't have an account?"}{' '}
             <button
-              onClick={() => { setIsRegister(!isRegister); setError(null); }}
+              onClick={() => { setIsRegister(!isRegister); setError(null); formik.resetForm(); }}
               className="text-primary font-bold hover:underline bg-transparent border-none cursor-pointer"
             >
               {isRegister ? 'Sign in instead' : 'Create an account'}

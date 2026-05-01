@@ -46,23 +46,42 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/caretrip'
   .then(async () => {
     console.log('MongoDB connected');
 
-    // One-time: drop old 2dsphere index that crashes on empty coordinates
+    // One-time: index cleanups
     try {
       const db = mongoose.connection.db;
+      
+      // 1. Doctors location indexes
       const indexes = await db.collection('doctors').indexes();
       const geoIndex = indexes.find(i => i.key && i.key['location.coordinates'] === '2dsphere');
       if (geoIndex) {
         await db.collection('doctors').dropIndex(geoIndex.name);
         console.log('Dropped old 2dsphere index:', geoIndex.name);
       }
-      // Also drop location_2dsphere if not sparse
       const locIndex = indexes.find(i => i.key && i.key.location === '2dsphere' && !i.sparse);
       if (locIndex) {
         await db.collection('doctors').dropIndex(locIndex.name);
         console.log('Dropped non-sparse location index:', locIndex.name);
       }
+
+      // 2. Users googleId index (must be sparse)
+      try {
+        await db.collection('users').dropIndex('googleId_1');
+        console.log('Dropped googleId_1 index explicitly to recreate as sparse');
+      } catch (err) {
+        // Ignore error if index doesn't exist
+      }
+
+      // 3. Cleanup broken doctor registrations
+      try {
+        const result = await db.collection('users').deleteMany({
+          role: 'Doctor',
+          doctorProfile: { $exists: false }
+        });
+        console.log(`Cleaned up ${result.deletedCount} broken doctor registrations.`);
+      } catch (err) {
+        console.log('Cleanup error:', err.message);
+      }
     } catch (idxErr) {
-      // Index might not exist, that's fine
       console.log('Index cleanup note:', idxErr.message);
     }
 
