@@ -12,6 +12,14 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const token = localStorage.getItem('caretrip_token');
+    const user = JSON.parse(localStorage.getItem('caretrip_user') || 'null');
+    if (token && user) {
+      navigate(getRedirectPath(user.role));
+    }
+  }, [navigate]);
+
   const getRedirectPath = (role) => {
     if (role === 'Doctor') return '/doctor-dashboard';
     if (role === 'Admin') return '/admin-dashboard';
