@@ -51,8 +51,12 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
-          <Link to="/" className="flex items-center gap-2">
-            <svg className="w-8 h-8 text-primary-700" viewBox="0 0 32 32" fill="none">
+          <Link 
+            to="/" 
+            className="flex items-center gap-2"
+            aria-label="CareTrip Home"
+          >
+            <svg className="w-8 h-8 text-primary-700" viewBox="0 0 32 32" fill="none" aria-hidden="true">
               <rect width="32" height="32" rx="8" fill="currentColor" />
               <path d="M16 8v16M8 16h16" stroke="white" strokeWidth="3" strokeLinecap="round" />
             </svg>
@@ -63,21 +67,28 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
         </div>
 
         {/* Right — Location, Avatar & Dropdown */}
-        <div className="flex items-center gap-2 sm:gap-6">
+        <div className="flex items-center gap-2 sm:gap-6" role="navigation" aria-label="User tools">
           {/* Location Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-600">
-            <MapPin size={14} className="text-primary-700" />
+          <div 
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-600"
+            role="status"
+            aria-label="Current Location"
+          >
+            <MapPin size={14} className="text-primary-700" aria-hidden="true" />
             <span className="font-medium">Gandhinagar, India</span>
           </div>
 
           {/* User Avatar & Dropdown */}
           <div className="relative" ref={dropdownRef}>
-            <div 
+            <button 
               className="flex items-center gap-2 cursor-pointer group p-1.5 rounded-xl hover:bg-slate-50 transition-all duration-200"
               onClick={() => setDropdownOpen(!dropdownOpen)}
+              aria-expanded={dropdownOpen}
+              aria-haspopup="true"
+              aria-label="User Profile Menu"
             >
               <div className="w-9 h-9 rounded-full bg-primary-700 text-white flex items-center justify-center text-sm font-semibold
-                              group-hover:ring-2 group-hover:ring-primary-300 transition-all duration-200 shadow-sm">
+                              group-hover:ring-2 group-hover:ring-primary-300 transition-all duration-200 shadow-sm" aria-hidden="true">
                 {userInitials}
               </div>
               <div className="hidden md:flex flex-col items-start leading-tight">
@@ -88,12 +99,16 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
                   {user?.role || 'User'}
                 </span>
               </div>
-              <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
-            </div>
+              <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+            </button>
 
             {/* Dropdown Menu */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-[60] animate-in fade-in zoom-in duration-200">
+              <div 
+                className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-[60] animate-in fade-in zoom-in duration-200"
+                role="menu"
+                aria-orientation="vertical"
+              >
                 <div className="px-4 py-2 border-b border-slate-100 mb-1 md:hidden">
                   <p className="text-sm font-bold text-slate-800">{userName}</p>
                   <p className="text-xs text-slate-500">{user?.role}</p>

@@ -6,6 +6,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { login, register, googleLogin } from '../services/api';
 import { loginStart, loginSuccess, loginFailure } from '../store';
+import SEO from '../components/SEO';
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -87,6 +88,10 @@ const Login = () => {
 
   return (
     <div className="h-screen w-full flex bg-white overflow-hidden">
+      <SEO 
+        title={isRegister ? "Join Our Community" : "Welcome Back"} 
+        description="Access global verified healthcare and emergency medical support with CareTrip. Your trusted partner for medical travel."
+      />
 
       {/* Left side: Authentication Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-4 lg:p-8 relative overflow-hidden z-20">
