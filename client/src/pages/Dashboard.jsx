@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [bookingDoctor, setBookingDoctor] = useState(null);
   const [profileDoctor, setProfileDoctor] = useState(null);
   const [loading, setLoading] = useState(!user);
-  
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -89,8 +89,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <SEO 
-        title={sectionTitles[activeSection] || 'User Dashboard'} 
+      <SEO
+        title={sectionTitles[activeSection] || 'User Dashboard'}
         description={`Manage your ${sectionTitles[activeSection] || 'Dashboard'} on CareTrip. Access medical services and emergency help.`}
       />
       <Navbar
@@ -109,9 +109,6 @@ export default function Dashboard() {
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="mb-6">
-            <p className="text-xs text-slate-400 mb-1">
-              CareTrip / {sectionTitles[activeSection] || 'Dashboard'}
-            </p>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
               {activeSection === 'home'
                 ? `Welcome back, ${firstName}!`
@@ -121,8 +118,8 @@ export default function Dashboard() {
           </div>
 
           {/* Render Nested Route with context */}
-          <Outlet context={{ 
-            user, 
+          <Outlet context={{
+            user,
             onProfileUpdate: handleProfileUpdate,
             onBookDoctor: handleBookDoctor,
             onViewProfile: handleViewProfile,
@@ -133,11 +130,11 @@ export default function Dashboard() {
 
       {/* Modals */}
       {bookingDoctor && (
-        <BookingModal 
-          doctor={bookingDoctor} 
-          onClose={handleCloseBooking} 
-          user={user} 
-          onNavigate={(path) => navigate(`/dashboard/${path === 'home' ? '' : path}`)} 
+        <BookingModal
+          doctor={bookingDoctor}
+          onClose={handleCloseBooking}
+          user={user}
+          onNavigate={(path) => navigate(`/dashboard/${path === 'home' ? '' : path}`)}
         />
       )}
       {profileDoctor && (

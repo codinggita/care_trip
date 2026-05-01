@@ -102,7 +102,7 @@ const Login = () => {
             <div className="flex justify-center md:justify-start mb-1">
               <img
                 src="https://res.cloudinary.com/dgcmeb8ec/image/upload/v1776876267/cf4aebc6-9a38-4ca1-8439-a2f8ecafc8aa_rxtljz.png"
-                alt="CareTrip Logo"
+                alt="CareTrip - Global Healthcare Verified"
                 className="h-16 w-16 md:h-20 md:w-20 object-cover rounded-full shadow-md bg-white border border-gray-100"
               />
             </div>
@@ -240,7 +240,7 @@ const Login = () => {
       <div className="hidden md:flex md:w-1/2 relative bg-white items-center justify-center z-10">
         <img
           src="https://res.cloudinary.com/dgcmeb8ec/image/upload/v1776919656/8892f2dc-4f94-4203-ab7a-f372689f183b_wdtmtt.png"
-          alt="CareTrip Medical Collage"
+          alt="Medical professional team and high-tech healthcare services collage"
           className="w-[90%] h-full object-contain max-h-screen scale-[1.02]"
         />
       </div>

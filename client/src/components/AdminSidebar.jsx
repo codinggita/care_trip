@@ -16,7 +16,7 @@ export default function AdminSidebar({ activeSection, onNavigate, isOpen, pendin
                      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
                      lg:translate-x-0`}
       >
-        <nav className="flex flex-col gap-1 p-4 pt-6">
+        <nav className="flex flex-col gap-1 p-4 pt-10">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
