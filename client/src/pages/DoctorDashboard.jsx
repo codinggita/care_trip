@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '../components/Navbar';
 import DoctorSidebar from '../components/DoctorSidebar';
 import DoctorHome from './doctor/DoctorHome';
@@ -8,13 +9,15 @@ import DoctorAppointments from './doctor/DoctorAppointments';
 import Profile from './Profile';
 import { getDoctorDashProfile } from '../services/api';
 import api from '../services/api';
+import { updateUser } from '../store';
 
 export default function DoctorDashboard() {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const [activeSection, setActiveSection] = useState('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [doctor, setDoctor] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!user);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,18 +26,16 @@ export default function DoctorDashboard() {
           api.get('/profile'),
           getDoctorDashProfile(),
         ]);
-        setUser(profileRes.data.data);
+        dispatch(updateUser(profileRes.data.data));
         setDoctor(doctorRes.data.data);
       } catch (error) {
         console.error('Failed to fetch doctor data:', error);
-        const localUser = localStorage.getItem('caretrip_user');
-        if (localUser) setUser(JSON.parse(localUser));
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [dispatch]);
 
   const firstName = user?.name?.split(' ')[0] || 'Doctor';
 
@@ -49,8 +50,8 @@ export default function DoctorDashboard() {
   }, []);
 
   const handleProfileUpdate = useCallback((updatedUser) => {
-    setUser(updatedUser);
-  }, []);
+    dispatch(updateUser(updatedUser));
+  }, [dispatch]);
 
   const renderSection = () => {
     switch (activeSection) {

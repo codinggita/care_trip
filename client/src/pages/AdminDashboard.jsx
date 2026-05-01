@@ -1,18 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '../components/Navbar';
 import AdminSidebar from '../components/AdminSidebar';
 import { getAdminStats, getPendingDoctors, getAllDoctorsAdmin, approveDoctor, rejectDoctor } from '../services/api';
 import api from '../services/api';
 import { Users, Clock, CheckCircle, Activity, XCircle, ShieldCheck, Search, ChevronDown } from 'lucide-react';
+import { updateUser } from '../store';
 
 export default function AdminDashboard() {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
   const [stats, setStats] = useState(null);
   const [pendingDocs, setPendingDocs] = useState([]);
   const [allDocs, setAllDocs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!user);
   const [actionLoading, setActionLoading] = useState(null);
 
   useEffect(() => {
@@ -23,17 +26,15 @@ export default function AdminDashboard() {
           getAdminStats(),
           getPendingDoctors(),
         ]);
-        setUser(profileRes.data.data);
+        dispatch(updateUser(profileRes.data.data));
         setStats(statsRes.data.data);
         setPendingDocs(pendingRes.data.data || []);
       } catch (err) {
         console.error('Admin fetch error:', err);
-        const localUser = localStorage.getItem('caretrip_user');
-        if (localUser) setUser(JSON.parse(localUser));
       } finally { setLoading(false); }
     };
     fetchData();
-  }, []);
+  }, [dispatch]);
 
   const loadAllDoctors = async () => {
     try {
