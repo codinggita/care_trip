@@ -1,3 +1,4 @@
+import { useOutletContext } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Star, BadgeCheck, Globe, ArrowRight, Stethoscope, MapPin, Calendar, CheckCircle, Clock as ClockIcon, AlertTriangle, Phone, XCircle } from 'lucide-react';
 import api from '../services/api';
@@ -10,7 +11,8 @@ const statIcons = {
   'map-pin': MapPin,
 };
 
-export default function Home({ onNavigate, onBookDoctor, onViewProfile }) {
+export default function Home() {
+  const { onNavigate, onBookDoctor, onViewProfile } = useOutletContext();
   const [recommendedDoctors, setRecommendedDoctors] = useState([]);
   const [stats, setStats] = useState([
     { iconType: 'stethoscope', label: 'Doctors Available', value: '...' },

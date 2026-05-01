@@ -1,3 +1,4 @@
+import { useOutletContext } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { MapPin, Calendar, Clock, RotateCcw, XCircle, Star, RefreshCw, CheckCircle, Ban, CalendarDays, Loader2, X } from 'lucide-react';
 import api, { submitReview } from '../services/api';
@@ -9,6 +10,7 @@ const tabs = [
 ];
 
 export default function MyBookings() {
+  const { onNavigate } = useOutletContext();
   const [activeTab, setActiveTab] = useState('upcoming');
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);

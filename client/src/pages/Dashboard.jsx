@@ -1,22 +1,29 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import BookingModal from '../components/BookingModal';
 import DoctorProfileModal from '../components/DoctorProfileModal';
-import Home from './Home';
-import FindDoctors from './FindDoctors';
-import EmergencyHelp from './EmergencyHelp';
-import MyBookings from './MyBookings';
-import Profile from './Profile';
 import api from '../services/api';
 
 export default function Dashboard() {
-  const [activeSection, setActiveSection] = useState('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bookingDoctor, setBookingDoctor] = useState(null);
   const [profileDoctor, setProfileDoctor] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Get active section from pathname
+  const getActiveSection = () => {
+    const path = location.pathname.split('/').filter(Boolean).pop();
+    if (path === 'dashboard' || !path) return 'home';
+    return path;
+  };
+
+  const activeSection = getActiveSection();
 
   // Fetch real profile from API
   useEffect(() => {
@@ -26,7 +33,6 @@ export default function Dashboard() {
         setUser(data.data);
       } catch (error) {
         console.error('Failed to fetch profile:', error);
-        // Fallback to local data if API fails or session expired
         const localUser = localStorage.getItem('caretrip_user');
         if (localUser) setUser(JSON.parse(localUser));
       } finally {
@@ -37,15 +43,7 @@ export default function Dashboard() {
     fetchUserData();
   }, []);
 
-  // Extract first name for welcome greeting
   const firstName = user?.name?.split(' ')[0] || 'User';
-
-  const handleNavigate = useCallback((section) => {
-    setActiveSection(section);
-    setSidebarOpen(false);
-    // Scroll to top on navigation
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
 
   const handleBookDoctor = useCallback((doctor) => {
     setProfileDoctor(null);
@@ -68,23 +66,6 @@ export default function Dashboard() {
     setUser(updatedUser);
   }, []);
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case 'home':
-        return <Home onNavigate={handleNavigate} onBookDoctor={handleBookDoctor} onViewProfile={handleViewProfile} />;
-      case 'find-doctors':
-        return <FindDoctors onViewProfile={handleViewProfile} onBookDoctor={handleBookDoctor} />;
-      case 'emergency':
-        return <EmergencyHelp />;
-      case 'bookings':
-        return <MyBookings />;
-      case 'profile':
-        return <Profile user={user} onProfileUpdate={handleProfileUpdate} />;
-      default:
-        return <Home onNavigate={handleNavigate} onBookDoctor={handleBookDoctor} />;
-    }
-  };
-
   const sectionTitles = {
     'home': 'Dashboard',
     'find-doctors': 'Find Doctors',
@@ -106,46 +87,52 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* Navbar */}
       <Navbar
         user={user}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         sidebarOpen={sidebarOpen}
       />
 
-      {/* Sidebar */}
       <Sidebar
         activeSection={activeSection}
-        onNavigate={handleNavigate}
+        onNavigate={() => setSidebarOpen(false)}
         isOpen={sidebarOpen}
       />
 
-      {/* Main Content */}
       <main className="pt-16 lg:pl-60 pb-20 lg:pb-8 min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="mb-6">
             <p className="text-xs text-slate-400 mb-1">
-              CareTrip / {sectionTitles[activeSection]}
+              CareTrip / {sectionTitles[activeSection] || 'Dashboard'}
             </p>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
               {activeSection === 'home'
                 ? `Welcome back, ${firstName}!`
-                : sectionTitles[activeSection]
+                : (sectionTitles[activeSection] || 'Dashboard')
               }
             </h1>
           </div>
 
-          {/* Active Section */}
-          <div key={activeSection}>
-            {renderSection()}
-          </div>
+          {/* Render Nested Route with context */}
+          <Outlet context={{ 
+            user, 
+            onProfileUpdate: handleProfileUpdate,
+            onBookDoctor: handleBookDoctor,
+            onViewProfile: handleViewProfile,
+            onNavigate: (path) => navigate(`/dashboard/${path === 'home' ? '' : path}`)
+          }} />
         </div>
       </main>
 
       {/* Modals */}
       {bookingDoctor && (
-        <BookingModal doctor={bookingDoctor} onClose={handleCloseBooking} user={user} onNavigate={handleNavigate} />
+        <BookingModal 
+          doctor={bookingDoctor} 
+          onClose={handleCloseBooking} 
+          user={user} 
+          onNavigate={(path) => navigate(`/dashboard/${path === 'home' ? '' : path}`)} 
+        />
       )}
       {profileDoctor && (
         <DoctorProfileModal
