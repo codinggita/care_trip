@@ -151,7 +151,7 @@ export default function Profile({ user, onProfileUpdate }) {
   const handleLogout = () => {
     localStorage.removeItem('caretrip_token');
     localStorage.removeItem('caretrip_user');
-    navigate('/login');
+    navigate('/');
   };
 
   // Display value or placeholder

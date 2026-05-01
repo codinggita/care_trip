@@ -17,8 +17,8 @@ const doctorSchema = new mongoose.Schema({
     evening: [{ type: String }]
   },
   location: {
-    type: { type: String, default: 'Point' },
-    coordinates: { type: [Number], default: undefined } // [longitude, latitude] — undefined means no location set
+    type: { type: String, enum: ['Point'] },
+    coordinates: { type: [Number] }
   },
   verified: { type: Boolean, default: false },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -49,8 +49,12 @@ doctorSchema.index({ location: '2dsphere' }, { sparse: true });
 
 // Prevent saving invalid GeoJSON (missing coordinates) which breaks 2dsphere index
 doctorSchema.pre('save', function (next) {
-  if (this.location && (!this.location.coordinates || this.location.coordinates.length !== 2)) {
-    this.location = undefined;
+  if (this.location) {
+    if (!this.location.coordinates || this.location.coordinates.length !== 2) {
+      this.location = undefined;
+    } else if (!this.location.type) {
+      this.location.type = 'Point';
+    }
   }
   next();
 });

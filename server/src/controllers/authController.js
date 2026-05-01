@@ -10,6 +10,10 @@ export const googleLogin = async (req, res) => {
   try {
     const { credential } = req.body;
     
+    if (!credential) {
+      return res.status(400).json({ success: false, message: 'Google credential is required' });
+    }
+
     // Verify Google ID Token
     const ticket = await client.verifyIdToken({
       idToken: credential,
@@ -35,6 +39,11 @@ export const googleLogin = async (req, res) => {
       // Link google ID if email existed
       user.googleId = sub;
       await user.save();
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not defined');
+      return res.status(500).json({ success: false, message: 'Server configuration error' });
     }
 
     // Create session JWT
@@ -65,14 +74,19 @@ export const googleLogin = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(401).json({ success: false, message: 'Authentication failed' });
+    console.error('Login error:', error.message, error.stack);
+    res.status(401).json({ success: false, message: 'Authentication failed: ' + error.message });
   }
 };
 
 export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+    }
 
     let user = await User.findOne({ email });
     if (user) {
@@ -91,15 +105,28 @@ export const register = async (req, res) => {
 
     // Auto-create Doctor profile if registering as Doctor
     if (user.role === 'Doctor') {
-      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-      const doctorProfile = await Doctor.create({
-        name,
-        userId: user._id,
-        initials,
-        languages: ['English'],
-      });
-      user.doctorProfile = doctorProfile._id;
-      await user.save();
+      try {
+        const nameParts = name.trim().split(/\s+/).filter(Boolean);
+        const initials = nameParts.map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'DR';
+        const doctorProfile = await Doctor.create({
+          name,
+          userId: user._id,
+          initials,
+          languages: ['English'],
+        });
+        user.doctorProfile = doctorProfile._id;
+        await user.save();
+      } catch (docError) {
+        console.error('Failed to create doctor profile:', docError);
+        // Rollback user creation if doctor profile fails
+        await User.findByIdAndDelete(user._id);
+        return res.status(500).json({ success: false, message: 'Failed to create doctor profile: ' + docError.message });
+      }
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not defined');
+      return res.status(500).json({ success: false, message: 'Server configuration error' });
     }
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -110,14 +137,21 @@ export const register = async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email, role: user.role, verificationStatus: 'unverified' }
     });
   } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Register error:', error.message, error.stack);
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, message: `Database duplicate key error: ${error.message}` });
+    }
+    res.status(500).json({ success: false, message: 'Server error: ' + error.message });
   }
 };
 
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -131,6 +165,11 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ success: false, message: 'Invalid email or password' });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not defined');
+      return res.status(500).json({ success: false, message: 'Server configuration error' });
     }
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -148,7 +187,7 @@ export const login = async (req, res) => {
       user: { id: user._id, name: user.name, email: user.email, role: user.role, verificationStatus }
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Login error:', error.message, error.stack);
+    res.status(500).json({ success: false, message: 'Server error: ' + error.message });
   }
 };
