@@ -1,30 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { login, register, googleLogin } from '../services/api';
+import { loginStart, loginSuccess, loginFailure } from '../store';
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [role, setRole] = useState('Traveler');
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    const token = localStorage.getItem('caretrip_token');
-    const user = JSON.parse(localStorage.getItem('caretrip_user') || 'null');
-    if (token && user) {
-      navigate(getRedirectPath(user.role));
-    }
-  }, [navigate]);
+  const { loading: isLoading, error } = useSelector((state) => state.auth);
 
   const getRedirectPath = (role) => {
     if (role === 'Doctor') return '/doctor-dashboard';
     if (role === 'Admin') return '/admin-dashboard';
     return '/dashboard';
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem('caretrip_token');
+    const user = JSON.parse(localStorage.getItem('caretrip_user') || 'null');
+    if (token && user) {
+      navigate(getRedirectPath(user.role));
+    }
+  }, [navigate]);
 
   const validationSchema = Yup.object({
     name: isRegister 
@@ -48,30 +50,25 @@ const Login = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      setIsLoading(true);
-      setError(null);
+      dispatch(loginStart());
       try {
         const res = isRegister
           ? await register({ ...values, role })
           : await login({ email: values.email, password: values.password });
 
         if (res.data.success) {
-          localStorage.setItem('caretrip_token', res.data.token);
-          localStorage.setItem('caretrip_user', JSON.stringify(res.data.user));
+          dispatch(loginSuccess({ token: res.data.token, user: res.data.user }));
           navigate(getRedirectPath(res.data.user.role));
         }
       } catch (err) {
         console.error('Authentication Error:', err);
-        setError(err.response?.data?.message || 'Authentication failed. Please try again.');
-      } finally {
-        setIsLoading(false);
+        dispatch(loginFailure(err.response?.data?.message || 'Authentication failed. Please try again.'));
       }
     },
   });
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    setIsLoading(true);
-    setError(null);
+    dispatch(loginStart());
     try {
       const res = await googleLogin({
         credential: credentialResponse.credential,
@@ -79,15 +76,12 @@ const Login = () => {
       });
 
       if (res.data.success) {
-        localStorage.setItem('caretrip_token', res.data.token);
-        localStorage.setItem('caretrip_user', JSON.stringify(res.data.user));
+        dispatch(loginSuccess({ token: res.data.token, user: res.data.user }));
         navigate(getRedirectPath(res.data.user.role));
       }
     } catch (err) {
       console.error('Google Auth Error:', err);
-      setError('Google Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+      dispatch(loginFailure('Google Login failed. Please try again.'));
     }
   };
 

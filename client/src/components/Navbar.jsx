@@ -1,11 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Bell, MapPin, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../store';
 
-export default function Navbar({ onToggleSidebar, sidebarOpen, user }) {
+export default function Navbar({ onToggleSidebar, sidebarOpen }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   const userName = user?.name || 'Guest';
   
@@ -20,8 +24,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen, user }) {
   const userInitials = user?.initials || getInitials(user?.name);
 
   const handleLogout = () => {
-    localStorage.removeItem('caretrip_token');
-    localStorage.removeItem('caretrip_user');
+    dispatch(logout());
     navigate('/');
   };
 

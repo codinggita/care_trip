@@ -1,17 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import BookingModal from '../components/BookingModal';
 import DoctorProfileModal from '../components/DoctorProfileModal';
 import api from '../services/api';
+import { updateUser } from '../store';
 
 export default function Dashboard() {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bookingDoctor, setBookingDoctor] = useState(null);
   const [profileDoctor, setProfileDoctor] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!user);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -25,23 +28,21 @@ export default function Dashboard() {
 
   const activeSection = getActiveSection();
 
-  // Fetch real profile from API
+  // Fetch real profile from API to keep state in sync
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const { data } = await api.get('/profile');
-        setUser(data.data);
+        dispatch(updateUser(data.data));
       } catch (error) {
         console.error('Failed to fetch profile:', error);
-        const localUser = localStorage.getItem('caretrip_user');
-        if (localUser) setUser(JSON.parse(localUser));
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserData();
-  }, []);
+    if (!user || loading) fetchUserData();
+  }, [dispatch, user]);
 
   const firstName = user?.name?.split(' ')[0] || 'User';
 
@@ -63,8 +64,8 @@ export default function Dashboard() {
   }, []);
 
   const handleProfileUpdate = useCallback((updatedUser) => {
-    setUser(updatedUser);
-  }, []);
+    dispatch(updateUser(updatedUser));
+  }, [dispatch]);
 
   const sectionTitles = {
     'home': 'Dashboard',
