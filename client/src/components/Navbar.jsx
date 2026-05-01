@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, MapPin, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
+import { Search, MapPin, Menu, X, User, LogOut, ChevronDown, Phone, AlertCircle, Info } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store';
@@ -12,7 +12,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
   const { user } = useSelector((state) => state.auth);
 
   const userName = user?.name || 'Guest';
-  
+
   const getInitials = (name) => {
     if (!name) return 'GU';
     const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -28,7 +28,6 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
     navigate('/');
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -40,100 +39,107 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }) {
   }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-      <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-        {/* Left — Logo & Mobile Menu Toggle */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <Link 
-            to="/" 
-            className="flex items-center gap-2"
-            aria-label="CareTrip Home"
-          >
-            <svg className="w-8 h-8 text-primary-700" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <rect width="32" height="32" rx="8" fill="currentColor" />
-              <path d="M16 8v16M8 16h16" stroke="white" strokeWidth="3" strokeLinecap="round" />
-            </svg>
-            <span className="text-lg font-bold text-primary-700 hidden sm:block">
-              CareTrip
-            </span>
-          </Link>
-        </div>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100 shadow-sm transition-all duration-300">
+      <div className="max-w-[1440px] mx-auto px-4 lg:px-10">
+        <div className="flex items-center justify-between h-20">
 
-        {/* Right — Location, Avatar & Dropdown */}
-        <div className="flex items-center gap-2 sm:gap-6" role="navigation" aria-label="User tools">
-          {/* Location Pill */}
-          <div 
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-600"
-            role="status"
-            aria-label="Current Location"
-          >
-            <MapPin size={14} className="text-primary-700" aria-hidden="true" />
-            <span className="font-medium">Gandhinagar, India</span>
-          </div>
-
-          {/* User Avatar & Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button 
-              className="flex items-center gap-2 cursor-pointer group p-1.5 rounded-xl hover:bg-slate-50 transition-all duration-200"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              aria-expanded={dropdownOpen}
-              aria-haspopup="true"
-              aria-label="User Profile Menu"
+          {/* Left Section — Logo & Main Nav */}
+          <div className="flex items-center gap-10">
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={onToggleSidebar}
+              className="lg:hidden p-2 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors"
             >
-              <div className="w-9 h-9 rounded-full bg-primary-700 text-white flex items-center justify-center text-sm font-semibold
-                              group-hover:ring-2 group-hover:ring-primary-300 transition-all duration-200 shadow-sm" aria-hidden="true">
-                {userInitials}
-              </div>
-              <div className="hidden md:flex flex-col items-start leading-tight">
-                <span className="text-sm font-bold text-slate-800 group-hover:text-primary-700 transition-colors">
-                  {userName}
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">
-                  {user?.role || 'User'}
-                </span>
-              </div>
-              <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+              {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
 
-            {/* Dropdown Menu */}
-            {dropdownOpen && (
-              <div 
-                className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-[60] animate-in fade-in zoom-in duration-200"
-                role="menu"
-                aria-orientation="vertical"
-              >
-                <div className="px-4 py-2 border-b border-slate-100 mb-1 md:hidden">
-                  <p className="text-sm font-bold text-slate-800">{userName}</p>
-                  <p className="text-xs text-slate-500">{user?.role}</p>
-                </div>
-                
-                <Link 
-                  to="/dashboard/profile" 
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  <User size={18} />
-                  <span className="font-medium">My Profile</span>
-                </Link>
-                
-                <div className="h-px bg-slate-100 my-1 mx-2"></div>
-                
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut size={18} />
-                  <span className="font-medium">Sign Out</span>
-                </button>
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2.5 group transition-transform duration-300 hover:scale-[1.02]">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-primary-100 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                <svg className="relative w-11 h-11 text-primary-700" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="20" cy="20" r="18" fill="#1e40af" />
+                  <path d="M20 10V30M10 20H30" stroke="white" strokeWidth="4" strokeLinecap="round" />
+                  <path d="M12 12L28 28M28 12L12 28" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
+                </svg>
               </div>
-            )}
+              <div className="flex flex-col items-start -space-y-1">
+                <span className="text-2xl font-black text-primary-900 tracking-tight uppercase">CARE<span className="text-primary-600">TRIP</span></span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em]">Health Global</span>
+              </div>
+            </Link>
+
+            {/* Nav Links */}
+            <div className="hidden lg:flex items-center gap-10 ml-4">
+              <Link to="/dashboard/find-doctors" className="group flex items-center gap-2 text-[13px] font-bold text-slate-700 hover:text-primary-700 uppercase tracking-widest transition-all duration-300 relative py-2">
+                <Search size={14} className="text-slate-400 group-hover:text-primary-600" />
+                Find Doctors
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link to="/dashboard/about" className="group flex items-center gap-1.5 text-[13px] font-bold text-slate-700 hover:text-primary-700 uppercase tracking-widest transition-all duration-300 relative py-2">
+                <Info size={14} className="text-slate-400 group-hover:text-primary-600" />
+                About CareTrip
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Section — Emergency & Profile */}
+          <div className="flex items-center gap-4 sm:gap-8">
+            {/* Emergency Button */}
+            <Link
+              to="/dashboard/emergency"
+              className="flex items-center gap-2.5 px-6 py-2.5 bg-red-600 text-white rounded-full font-bold text-[12px] uppercase tracking-[0.1em] hover:bg-red-700 transition-all duration-300 shadow-lg shadow-red-100 hover:shadow-red-200 border-2 border-transparent hover:border-red-300 active:scale-95"
+            >
+              <AlertCircle size={16} className="animate-pulse" />
+              <span>Emergency Help</span>
+            </Link>
+
+            {/* User Profile */}
+            <div className="relative border-l border-slate-100 pl-6 sm:pl-8" ref={dropdownRef}>
+              <button
+                className="flex items-center gap-3 group p-1 rounded-xl hover:bg-slate-50 transition-all duration-300"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                <div className="w-10 h-10 rounded-full bg-primary-700 text-white flex items-center justify-center text-sm font-black shadow-md group-hover:ring-4 group-hover:ring-primary-50 transition-all duration-300 border-2 border-white">
+                  {userInitials}
+                </div>
+                <div className="hidden md:flex flex-col items-start mr-1">
+                  <span className="text-[13px] font-bold text-slate-800 group-hover:text-primary-700 transition-colors leading-none mb-1 tracking-tight">{userName}</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{user?.role || 'Patient'}</span>
+                </div>
+                <ChevronDown size={14} className={`text-slate-300 transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-4 w-64 bg-white rounded-2xl border border-slate-100 shadow-2xl py-2 z-[60] animate-in fade-in zoom-in duration-300">
+                  <div className="px-6 py-4 border-b border-slate-50 mb-2 bg-slate-50/50 rounded-t-2xl">
+                    <p className="text-[14px] font-black text-slate-800">{userName}</p>
+                    <p className="text-[11px] text-slate-400 font-bold truncate tracking-tight">{user?.email}</p>
+                  </div>
+
+                  <Link
+                    to="/dashboard/profile"
+                    className="flex items-center gap-3 px-6 py-3.5 text-[13px] text-slate-600 hover:bg-primary-50 hover:text-primary-700 transition-colors font-bold"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <User size={18} className="text-slate-400" />
+                    My Account
+                  </Link>
+
+                  <div className="h-px bg-slate-50 my-1 mx-4"></div>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-6 py-3.5 text-[13px] text-red-500 hover:bg-red-50 transition-colors font-black"
+                  >
+                    <LogOut size={18} />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

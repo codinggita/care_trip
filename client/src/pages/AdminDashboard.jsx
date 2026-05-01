@@ -123,7 +123,6 @@ export default function AdminDashboard() {
       <main className="pt-16 lg:pl-60 pb-20 lg:pb-8 min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
           <div className="mb-6">
-            <p className="text-xs text-slate-400 mb-1">CareTrip Admin / {sectionTitles[activeSection]}</p>
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{sectionTitles[activeSection]}</h1>
           </div>
 
