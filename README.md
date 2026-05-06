@@ -1,12 +1,37 @@
 # CareTrip - Global Medical Care for Travelers
 
-CareTrip is a specialized healthcare platform designed for international travelers to find verified, language-compatible medical care wherever they are. It bridges the gap between travelers and local healthcare providers, ensuring peace of mind during medical emergencies or planned procedures abroad.
+CareTrip is a specialized healthcare platform designed for international travelers to find verified medical care wherever they are. It bridges the gap between travelers and local healthcare providers, ensuring peace of mind during medical emergencies or planned procedures abroad.
+
+## 🧩 Problem Statement
+
+International travelers often face serious challenges when seeking medical care in unfamiliar locations. These include:
+
+- ❌ Difficulty finding trusted and verified doctors
+- 📍 Lack of reliable location-based medical discovery
+- 🚨 No quick access to emergency healthcare support
+- 🔐 Concerns about authenticity of medical credentials
+
+## 💡 Solution: CareTrip
+
+CareTrip is a comprehensive healthcare platform designed specifically for travelers, enabling them to quickly find, verify, and connect with trusted medical professionals worldwide.
+
+🔑 How CareTrip Solves the Problem
+- ✅ Verified Doctor Network
+Ensures trust through NMC registration checks, license uploads, and manual admin verification.
+- 🌐 Smart Location-Based Discovery
+Uses Mappls and Google Maps to help users find nearby doctors and clinics instantly.
+- 🔐 Secure Authentication & RBAC
+Ensures safe access with JWT-based sessions and role-based dashboards for Travelers, Doctors, and Admins.
+- 📊 User-Centric Dashboard
+Enables users to manage bookings, doctors to manage schedules, and admins to verify and control the system.
 
 ## 🔗 Project Links
 
 - **Live Demo**: [care-trip-frontend.vercel.app](https://care-trip-frontend.vercel.app/)
+- **Backend Deployed Link**: [care-trip-api.onrender.com](https://care-trip-api.onrender.com/)
+- **YouTube Demo Video**: [youtube.com/watch?v=nsfZlwu1Gzw](https://www.youtube.com/watch?v=nsfZlwu1Gzw)
 - **Figma Design**: [UI/UX Prototype](https://www.figma.com/proto/DSdKqksDFdXESRzpUY1ZLN/Untitled?node-id=151-3&viewport=782%2C-230%2C0.08&t=0Z5NodkmPsFaaEDC-0&scaling=scale-down&content-scaling=fixed&starting-point-node-id=151%3A3)
-- **API Documentation**: [Postman Collection](https://documenter.getpostman.com/view/50841045/2sBXqKnzCC)
+- **Postman API Documentation**: [Postman Collection](https://documenter.getpostman.com/view/50841045/2sBXqKnzCC)
 
 ---
 
@@ -70,6 +95,11 @@ To solve the problem of finding "Trusted Doctors," we implement a multi-layered 
 5.  **Verified Badge**: Only successfully audited doctors receive the blue "CareTrip Verified" badge.
 
 ---
+
+## 📸 Screenshots
+![Login Page](./LoginPage_Care-Trip.png)
+![Download](./download.png)
+
 
 ## 🛠️ Tech Stack
 
