@@ -96,6 +96,11 @@ To solve the problem of finding "Trusted Doctors," we implement a multi-layered 
 
 ---
 
+## 📸 Screenshots
+![Login Page](./LoginPage_Care-Trip.png)
+![Download](./download.png)
+
+
 ## 🛠️ Tech Stack
 
 ### Frontend
